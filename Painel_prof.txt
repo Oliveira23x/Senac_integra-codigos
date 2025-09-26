@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Professor - SENAC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="graduation-cap" class="w-8 h-8"></i>
+                <div>
+                    <h1 class="text-2xl font-bold">Painel Professor</h1>
+                    <p class="text-blue-100">SENAC - Sistema Acadêmico</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-semibold">Prof. Carlos Silva</p>
+                <p class="text-blue-100 text-sm">Tecnologia da Informação</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Seletor de Turma -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Turma:</label>
+            <select id="turmaSelect" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="t1">ADS 1º Sem/Noite</option>
+                <option value="t2">Redes 2º Sem/Manhã</option>
+            </select>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6">
+            <div class="flex flex-wrap gap-2 bg-white p-2 rounded-lg shadow-sm">
+                <button class="tab-btn tab-active px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2" data-tab="dashboard">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-100" data-tab="agenda">
+                    <i data-lucide="calendar-days" class="w-4 h-4"></i>
+                    <span>Agenda</span>
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-100" data-tab="perguntas">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    <span>Perguntas</span>
+                    <span id="pendentesCount" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">2</span>
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-100" data-tab="notas">
+                    <i data-lucide="notebook-text" class="w-4 h-4"></i>
+                    <span>Notas</span>
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-100" data-tab="entregas">
+                    <i data-lucide="package" class="w-4 h-4"></i>
+                    <span>Entregas</span>
+                    <span id="entregasPendentesCount" class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                </button>
+                <button class="tab-btn px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-100" data-tab="feedbacks">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Feedbacks</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm card-hover transition-all duration-200 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium">Alunos Ativos</p>
+                            <p id="totalAlunos" class="text-3xl font-bold text-gray-900 mt-1">3</p>
+                            <p class="text-xs text-green-600 mt-1">↗ +2 este mês</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm card-hover transition-all duration-200 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium">Média da Turma</p>
+                            <p id="mediaTurma" class="text-3xl font-bold text-green-600 mt-1">7.8</p>
+                            <p class="text-xs text-green-600 mt-1">↗ +0.3 pontos</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm card-hover transition-all duration-200 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium">Perguntas Pendentes</p>
+                            <p id="perguntasPendentes" class="text-3xl font-bold text-orange-600 mt-1">2</p>
+                            <p class="text-xs text-orange-600 mt-1">Requer atenção</p>
+                        </div>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i data-lucide="message-circle" class="w-6 h-6 text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm card-hover transition-all duration-200 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium">Taxa de Aprovação</p>
+                            <p class="text-3xl font-bold text-purple-600 mt-1">85%</p>
+                            <p class="text-xs text-purple-600 mt-1">Acima da meta</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i data-lucide="award" class="w-6 h-6 text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <i data-lucide="activity" class="w-5 h-5 mr-2 text-gray-600"></i>
+                        Atividades Recentes
+                    </h3>
+                    <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver todas</button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <i data-lucide="message-square" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">Nova pergunta de João Silva</p>
+                            <p class="text-sm text-gray-600 mt-1">Professor, a prova é cumulativa?</p>
+                            <span class="text-xs text-gray-500 mt-2 block">Hoje às 19:12</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                        <div class="bg-green-100 p-2 rounded-full">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">Notas atualizadas</p>
+                            <p class="text-sm text-gray-600 mt-1">Turma ADS 1º Sem/Noite - Avaliação N2</p>
+                            <span class="text-xs text-gray-500 mt-2 block">Hoje às 15:30</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                        <div class="bg-purple-100 p-2 rounded-full">
+                            <i data-lucide="calendar" class="w-4 h-4 text-purple-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">Aula agendada</p>
+                            <p class="text-sm text-gray-600 mt-1">Programação Web - Aula 9</p>
+                            <span class="text-xs text-gray-500 mt-2 block">Amanhã às 19:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agenda Tab -->
+        <div id="agenda" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Calendar View -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="calendar-days" class="w-5 h-5 mr-2 text-gray-600"></i>
+                            Agenda da Semana
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg">Esta Semana</button>
+                            <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Próxima</button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">ADS 1º Sem/Noite</h4>
+                                        <p class="text-sm text-gray-600">Programação Web - Aula 8</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded">19:00 - 22:30</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>Sala 201</span>
+                                <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-1"></i>3 alunos</span>
+                                <span class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>3h 30min</span>
+                            </div>
+                        </div>
+
+                        <div class="border border-green-200 bg-green-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Redes 2º Sem/Manhã</h4>
+                                        <p class="text-sm text-gray-600">Segurança de Redes</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-green-700 bg-green-100 px-2 py-1 rounded">08:00 - 11:30</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>Lab 102</span>
+                                <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-1"></i>2 alunos</span>
+                                <span class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>3h 30min</span>
+                            </div>
+                        </div>
+
+                        <div class="border border-orange-200 bg-orange-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Reunião Pedagógica</h4>
+                                        <p class="text-sm text-gray-600">Planejamento do semestre</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-orange-700 bg-orange-100 px-2 py-1 rounded">14:00 - 16:00</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>Sala de Reuniões</span>
+                                <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-1"></i>Coordenação</span>
+                                <span class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>2h</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="bell" class="w-5 h-5 mr-2 text-gray-600"></i>
+                        Próximos Eventos
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                            <p class="font-medium text-gray-900">Prova N2</p>
+                            <p class="text-sm text-gray-600">ADS 1º Sem/Noite</p>
+                            <p class="text-xs text-blue-600 mt-1">Em 3 dias</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <p class="font-medium text-gray-900">Entrega de Projeto</p>
+                            <p class="text-sm text-gray-600">Redes 2º Sem/Manhã</p>
+                            <p class="text-xs text-green-600 mt-1">Em 1 semana</p>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                            <p class="font-medium text-gray-900">Conselho de Classe</p>
+                            <p class="text-sm text-gray-600">Todas as turmas</p>
+                            <p class="text-xs text-purple-600 mt-1">Em 2 semanas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perguntas Tab -->
+        <div id="perguntas" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Questions List -->
+                <div class="lg:col-span-3 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="message-square" class="w-5 h-5 mr-2 text-gray-600"></i>
+                            Perguntas dos Alunos
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-lg">Pendentes</button>
+                            <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Respondidas</button>
+                        </div>
+                    </div>
+                    <div id="perguntasList" class="space-y-4">
+                        <!-- Perguntas serão inseridas aqui via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Question Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 text-gray-600"></i>
+                        Estatísticas
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="text-center p-4 bg-orange-50 rounded-lg">
+                            <p class="text-2xl font-bold text-orange-600" id="perguntasPendentesStats">2</p>
+                            <p class="text-sm text-gray-600">Pendentes</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <p class="text-2xl font-bold text-green-600">5</p>
+                            <p class="text-sm text-gray-600">Respondidas</p>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <p class="text-2xl font-bold text-blue-600">2.5h</p>
+                            <p class="text-sm text-gray-600">Tempo médio</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notas Tab -->
+        <div id="notas" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="notebook-text" class="w-5 h-5 mr-2 text-gray-600"></i>
+                            Notas da Turma
+                        </h3>
+                        <div class="flex space-x-3">
+                            <button class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Exportar
+                            </button>
+                            <button onclick="salvarNotas()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Salvar Notas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-900">Aluno</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-900">N1 (40%)</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-900">N2 (60%)</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-900">Média Final</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-900">Status</th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-900">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notasTable">
+                                <!-- Notas serão inseridas aqui via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entregas Tab -->
+        <div id="entregas" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Deliveries List -->
+                <div class="lg:col-span-3 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="package" class="w-5 h-5 mr-2 text-gray-600"></i>
+                            Gerenciar Entregas
+                        </h3>
+                        <div class="flex space-x-3">
+                            <button class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-lg">Pendentes</button>
+                            <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Entregues</button>
+                            <button onclick="adicionarEntrega()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
+                                Nova Entrega
+                            </button>
+                        </div>
+                    </div>
+                    <div id="entregasList" class="space-y-4">
+                        <!-- Entregas serão inseridas aqui via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Delivery Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 text-gray-600"></i>
+                        Estatísticas
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="text-center p-4 bg-orange-50 rounded-lg">
+                            <p class="text-2xl font-bold text-orange-600" id="entregasPendentesStats">3</p>
+                            <p class="text-sm text-gray-600">Pendentes</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <p class="text-2xl font-bold text-green-600" id="entregasConcluidasStats">2</p>
+                            <p class="text-sm text-gray-600">Entregues</p>
+                        </div>
+                        <div class="text-center p-4 bg-red-50 rounded-lg">
+                            <p class="text-2xl font-bold text-red-600" id="entregasAtrasadasStats">1</p>
+                            <p class="text-sm text-gray-600">Atrasadas</p>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <p class="text-2xl font-bold text-blue-600">85%</p>
+                            <p class="text-sm text-gray-600">Taxa de entrega</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedbacks Tab -->
+        <div id="feedbacks" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Send Feedback -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="pencil-line" class="w-5 h-5 mr-2 text-gray-600"></i>
+                        Enviar Feedback
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Tipo de Feedback:</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                    <input type="radio" name="tipoFeedback" value="Turma" class="mr-3" checked>
+                                    <div>
+                                        <p class="font-medium">Para a Turma</p>
+                                        <p class="text-xs text-gray-500">Feedback geral</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                    <input type="radio" name="tipoFeedback" value="Individual" class="mr-3">
+                                    <div>
+                                        <p class="font-medium">Individual</p>
+                                        <p class="text-xs text-gray-500">Para um aluno</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="alunoSelect" class="hidden">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Selecionar Aluno:</label>
+                            <select id="alunoAlvo" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <!-- Opções serão inseridas via JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Categoria:</label>
+                            <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option>Desempenho Acadêmico</option>
+                                <option>Participação em Aula</option>
+                                <option>Comportamento</option>
+                                <option>Projeto/Trabalho</option>
+                                <option>Geral</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Mensagem:</label>
+                            <textarea id="feedbackText" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Digite seu feedback detalhado..."></textarea>
+                        </div>
+                        
+                        <button onclick="enviarFeedback()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            <i data-lucide="send" class="w-4 h-4 inline mr-2"></i>
+                            Enviar Feedback
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback History -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i data-lucide="clock" class="w-5 h-5 mr-2 text-gray-600"></i>
+                            Histórico de Feedbacks
+                        </h3>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver todos</button>
+                    </div>
+                    <div id="feedbacksList" class="space-y-4">
+                        <!-- Feedbacks serão inseridos aqui via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados simulados
+        let turmaSelecionada = 't1';
+        
+        const turmas = {
+            t1: { nome: 'ADS 1º Sem/Noite' },
+            t2: { nome: 'Redes 2º Sem/Manhã' }
+        };
+
+        const perguntas = [
+            {
+                id: 1,
+                turmaId: 't1',
+                aluno: 'João Silva',
+                texto: 'Professor, a prova é cumulativa?',
+                data: '2025-08-10 19:12',
+                respondida: false,
+                resposta: ''
+            },
+            {
+                id: 2,
+                turmaId: 't1',
+                aluno: 'Maria Souza',
+                texto: 'Qual o peso do projeto final?',
+                data: '2025-08-12 08:40',
+                respondida: true,
+                resposta: 'O projeto final vale 30% da nota.'
+            },
+            {
+                id: 3,
+                turmaId: 't2',
+                aluno: 'Pedro Santos',
+                texto: 'Pode disponibilizar os slides da aula 4?',
+                data: '2025-08-14 10:05',
+                respondida: false,
+                resposta: ''
+            }
+        ];
+
+        const notas = {
+            t1: [
+                { id: 'a1', aluno: 'João Silva', n1: 7.5, n2: 8.0 },
+                { id: 'a2', aluno: 'Maria Souza', n1: 9.0, n2: 8.5 },
+                { id: 'a3', aluno: 'Lucas Neri', n1: 6.0, n2: 7.0 }
+            ],
+            t2: [
+                { id: 'a4', aluno: 'Pedro Santos', n1: 8.0, n2: 7.0 },
+                { id: 'a5', aluno: 'Ana Paula', n1: 9.5, n2: 9.0 }
+            ]
+        };
+
+        let feedbacks = [
+            {
+                id: 1,
+                turmaId: 't1',
+                tipo: 'Turma',
+                texto: 'Boa evolução na participação. Atenção aos prazos das entregas.',
+                data: '2025-08-11 21:00'
+            }
+        ];
+
+        const entregas = {
+            t1: [
+                {
+                    id: 1,
+                    titulo: 'Projeto Final - Sistema Web',
+                    descricao: 'Desenvolvimento completo de um sistema web com frontend e backend',
+                    dataLimite: '2025-01-20',
+                    horaLimite: '23:59',
+                    alunos: [
+                        { id: 'a1', nome: 'João Silva', entregue: false, dataEntrega: null, horaEntrega: null },
+                        { id: 'a2', nome: 'Maria Souza', entregue: true, dataEntrega: '2025-01-18', horaEntrega: '20:30' },
+                        { id: 'a3', nome: 'Lucas Neri', entregue: false, dataEntrega: null, horaEntrega: null }
+                    ]
+                },
+                {
+                    id: 2,
+                    titulo: 'Lista de Exercícios - JavaScript',
+                    descricao: 'Resolução de 15 exercícios sobre manipulação do DOM',
+                    dataLimite: '2025-01-15',
+                    horaLimite: '18:00',
+                    alunos: [
+                        { id: 'a1', nome: 'João Silva', entregue: true, dataEntrega: '2025-01-14', horaEntrega: '16:45' },
+                        { id: 'a2', nome: 'Maria Souza', entregue: true, dataEntrega: '2025-01-15', horaEntrega: '17:30' },
+                        { id: 'a3', nome: 'Lucas Neri', entregue: false, dataEntrega: null, horaEntrega: null }
+                    ]
+                },
+                {
+                    id: 3,
+                    titulo: 'Apresentação - Metodologias Ágeis',
+                    descricao: 'Apresentação de 10 minutos sobre Scrum ou Kanban',
+                    dataLimite: '2025-01-25',
+                    horaLimite: '19:00',
+                    alunos: [
+                        { id: 'a1', nome: 'João Silva', entregue: false, dataEntrega: null, horaEntrega: null },
+                        { id: 'a2', nome: 'Maria Souza', entregue: false, dataEntrega: null, horaEntrega: null },
+                        { id: 'a3', nome: 'Lucas Neri', entregue: false, dataEntrega: null, horaEntrega: null }
+                    ]
+                }
+            ],
+            t2: [
+                {
+                    id: 4,
+                    titulo: 'Configuração de Firewall',
+                    descricao: 'Relatório sobre configuração de firewall em ambiente corporativo',
+                    dataLimite: '2025-01-22',
+                    horaLimite: '20:00',
+                    alunos: [
+                        { id: 'a4', nome: 'Pedro Santos', entregue: true, dataEntrega: '2025-01-20', horaEntrega: '19:15' },
+                        { id: 'a5', nome: 'Ana Paula', entregue: false, dataEntrega: null, horaEntrega: null }
+                    ]
+                }
+            ]
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            setupEventListeners();
+            atualizarInterface();
+        });
+
+        function setupEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+
+            // Turma selection
+            document.getElementById('turmaSelect').addEventListener('change', function() {
+                turmaSelecionada = this.value;
+                atualizarInterface();
+            });
+
+            // Feedback type selection
+            document.querySelectorAll('input[name="tipoFeedback"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const alunoSelect = document.getElementById('alunoSelect');
+                    if (this.value === 'Individual') {
+                        alunoSelect.classList.remove('hidden');
+                        atualizarAlunosSelect();
+                    } else {
+                        alunoSelect.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        function switchTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+            });
+            
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            activeBtn.classList.add('tab-active');
+            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Update specific tab content
+            if (tabId === 'perguntas') {
+                atualizarPerguntas();
+            } else if (tabId === 'notas') {
+                atualizarNotas();
+            } else if (tabId === 'entregas') {
+                atualizarEntregas();
+            } else if (tabId === 'feedbacks') {
+                atualizarFeedbacks();
+            }
+        }
+
+        function atualizarInterface() {
+            atualizarDashboard();
+            atualizarPerguntas();
+            atualizarNotas();
+            atualizarEntregas();
+            atualizarFeedbacks();
+        }
+
+        function atualizarDashboard() {
+            const notasDaTurma = notas[turmaSelecionada] || [];
+            const perguntasDaTurma = perguntas.filter(p => p.turmaId === turmaSelecionada);
+            const pendentes = perguntasDaTurma.filter(p => !p.respondida).length;
+            
+            // Calcular entregas pendentes
+            const entregasDaTurma = entregas[turmaSelecionada] || [];
+            let entregasPendentes = 0;
+            entregasDaTurma.forEach(entrega => {
+                entregasPendentes += entrega.alunos.filter(aluno => !aluno.entregue).length;
+            });
+            
+            // Calcular média
+            let media = 0;
+            if (notasDaTurma.length > 0) {
+                const medias = notasDaTurma.map(a => (a.n1 + a.n2) / 2);
+                media = medias.reduce((acc, v) => acc + v, 0) / medias.length;
+            }
+
+            document.getElementById('totalAlunos').textContent = notasDaTurma.length;
+            document.getElementById('mediaTurma').textContent = media.toFixed(1);
+            document.getElementById('perguntasPendentes').textContent = pendentes;
+            document.getElementById('pendentesCount').textContent = pendentes;
+            document.getElementById('entregasPendentesCount').textContent = entregasPendentes;
+        }
+
+        function atualizarPerguntas() {
+            const perguntasDaTurma = perguntas.filter(p => p.turmaId === turmaSelecionada);
+            const container = document.getElementById('perguntasList');
+            
+            container.innerHTML = perguntasDaTurma.map(pergunta => `
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-medium">${pergunta.aluno}</h4>
+                            <p class="text-sm text-gray-500">${pergunta.data}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full ${pergunta.respondida ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
+                            ${pergunta.respondida ? 'Respondida' : 'Pendente'}
+                        </span>
+                    </div>
+                    <p class="text-gray-700 mb-3">${pergunta.texto}</p>
+                    ${pergunta.respondida ? 
+                        `<div class="bg-blue-50 p-3 rounded-lg">
+                            <p class="text-sm font-medium text-blue-800 mb-1">Sua resposta:</p>
+                            <p class="text-blue-700">${pergunta.resposta}</p>
+                        </div>` :
+                        `<div class="space-y-2">
+                            <textarea id="resposta-${pergunta.id}" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Digite sua resposta..."></textarea>
+                            <button onclick="responderPergunta(${pergunta.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Responder
+                            </button>
+                        </div>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        function atualizarNotas() {
+            const notasDaTurma = notas[turmaSelecionada] || [];
+            const tbody = document.getElementById('notasTable');
+            
+            tbody.innerHTML = notasDaTurma.map(aluno => {
+                const media = (aluno.n1 * 0.4) + (aluno.n2 * 0.6);
+                const status = media >= 7 ? 'Aprovado' : media >= 5 ? 'Recuperação' : 'Reprovado';
+                const statusColor = media >= 7 ? 'text-green-600' : media >= 5 ? 'text-yellow-600' : 'text-red-600';
+                const statusBg = media >= 7 ? 'bg-green-100' : media >= 5 ? 'bg-yellow-100' : 'bg-red-100';
+                
+                return `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="py-4 px-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-blue-600">${aluno.aluno.charAt(0)}</span>
+                                </div>
+                                <span class="font-medium text-gray-900">${aluno.aluno}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <input type="number" value="${aluno.n1}" min="0" max="10" step="0.1" 
+                                   class="w-20 text-center border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   onchange="atualizarNota('${aluno.id}', 'n1', this.value)">
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <input type="number" value="${aluno.n2}" min="0" max="10" step="0.1"
+                                   class="w-20 text-center border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   onchange="atualizarNota('${aluno.id}', 'n2', this.value)">
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="font-bold text-lg text-gray-900">${media.toFixed(1)}</span>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium ${statusColor} ${statusBg}">${status}</span>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <div class="flex justify-center space-x-2">
+                                <button class="text-blue-600 hover:text-blue-800 p-1" title="Editar">
+                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                </button>
+                                <button class="text-green-600 hover:text-green-800 p-1" title="Histórico">
+                                    <i data-lucide="history" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Recriar ícones após atualizar o DOM
+            lucide.createIcons();
+        }
+
+        function atualizarFeedbacks() {
+            const feedbacksDaTurma = feedbacks.filter(f => f.turmaId === turmaSelecionada);
+            const container = document.getElementById('feedbacksList');
+            
+            container.innerHTML = feedbacksDaTurma.map(feedback => `
+                <div class="border border-gray-200 rounded-lg p-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm font-medium text-blue-600">${feedback.tipo}</span>
+                        <span class="text-xs text-gray-500">${feedback.data}</span>
+                    </div>
+                    <p class="text-sm text-gray-700">${feedback.texto}</p>
+                </div>
+            `).join('');
+        }
+
+        function atualizarAlunosSelect() {
+            const notasDaTurma = notas[turmaSelecionada] || [];
+            const select = document.getElementById('alunoAlvo');
+            
+            select.innerHTML = notasDaTurma.map(aluno => 
+                `<option value="${aluno.id}">${aluno.aluno}</option>`
+            ).join('');
+        }
+
+        function responderPergunta(id) {
+            const resposta = document.getElementById(`resposta-${id}`).value.trim();
+            if (!resposta) {
+                alert('Por favor, digite uma resposta.');
+                return;
+            }
+            
+            const pergunta = perguntas.find(p => p.id === id);
+            if (pergunta) {
+                pergunta.respondida = true;
+                pergunta.resposta = resposta;
+                atualizarInterface();
+                alert('Resposta enviada com sucesso!');
+            }
+        }
+
+        function atualizarNota(idAluno, campo, valor) {
+            const notasDaTurma = notas[turmaSelecionada];
+            const aluno = notasDaTurma.find(a => a.id === idAluno);
+            if (aluno) {
+                aluno[campo] = parseFloat(valor) || 0;
+                atualizarInterface();
+            }
+        }
+
+        function salvarNotas() {
+            alert('Notas salvas com sucesso!');
+        }
+
+        function enviarFeedback() {
+            const texto = document.getElementById('feedbackText').value.trim();
+            const tipoRadio = document.querySelector('input[name="tipoFeedback"]:checked');
+            const tipo = tipoRadio ? tipoRadio.value : 'Turma';
+            
+            if (!texto) {
+                alert('Por favor, digite uma mensagem.');
+                return;
+            }
+            
+            const novoFeedback = {
+                id: feedbacks.length + 1,
+                turmaId: turmaSelecionada,
+                tipo: tipo,
+                texto: texto,
+                data: new Date().toLocaleString('pt-BR')
+            };
+            
+            feedbacks.push(novoFeedback);
+            document.getElementById('feedbackText').value = '';
+            
+            // Reset form
+            document.querySelector('input[name="tipoFeedback"][value="Turma"]').checked = true;
+            document.getElementById('alunoSelect').classList.add('hidden');
+            
+            atualizarFeedbacks();
+            alert('Feedback enviado com sucesso!');
+        }
+
+        function atualizarEntregas() {
+            const entregasDaTurma = entregas[turmaSelecionada] || [];
+            const container = document.getElementById('entregasList');
+            
+            // Calcular estatísticas
+            let totalPendentes = 0;
+            let totalConcluidas = 0;
+            let totalAtrasadas = 0;
+            const hoje = new Date();
+            
+            entregasDaTurma.forEach(entrega => {
+                const dataLimite = new Date(entrega.dataLimite + 'T' + entrega.horaLimite);
+                entrega.alunos.forEach(aluno => {
+                    if (aluno.entregue) {
+                        totalConcluidas++;
+                    } else {
+                        totalPendentes++;
+                        if (hoje > dataLimite) {
+                            totalAtrasadas++;
+                        }
+                    }
+                });
+            });
+            
+            // Atualizar estatísticas
+            document.getElementById('entregasPendentesStats').textContent = totalPendentes;
+            document.getElementById('entregasConcluidasStats').textContent = totalConcluidas;
+            document.getElementById('entregasAtrasadasStats').textContent = totalAtrasadas;
+            
+            container.innerHTML = entregasDaTurma.map(entrega => {
+                const dataLimite = new Date(entrega.dataLimite + 'T' + entrega.horaLimite);
+                const hoje = new Date();
+                const isAtrasada = hoje > dataLimite;
+                const entregues = entrega.alunos.filter(a => a.entregue).length;
+                const total = entrega.alunos.length;
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h4 class="text-lg font-semibold text-gray-900">${entrega.titulo}</h4>
+                                    <span class="px-2 py-1 text-xs rounded-full ${isAtrasada ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                                        ${isAtrasada ? 'Atrasada' : 'Ativa'}
+                                    </span>
+                                </div>
+                                <p class="text-gray-600 mb-3">${entrega.descricao}</p>
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span class="flex items-center">
+                                        <i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                                        ${new Date(entrega.dataLimite).toLocaleDateString('pt-BR')}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                        ${entrega.horaLimite}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i data-lucide="users" class="w-4 h-4 mr-1"></i>
+                                        ${entregues}/${total} entregues
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="w-16 h-16 rounded-full border-4 ${entregues === total ? 'border-green-500' : 'border-orange-500'} flex items-center justify-center">
+                                    <span class="text-lg font-bold ${entregues === total ? 'text-green-600' : 'text-orange-600'}">
+                                        ${Math.round((entregues/total)*100)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h5 class="font-medium text-gray-900 mb-3">Status dos Alunos:</h5>
+                            ${entrega.alunos.map(aluno => `
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span class="text-sm font-medium text-blue-600">${aluno.nome.charAt(0)}</span>
+                                        </div>
+                                        <span class="font-medium text-gray-900">${aluno.nome}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        ${aluno.entregue ? 
+                                            `<div class="text-right">
+                                                <span class="text-sm text-green-600 font-medium">Entregue</span>
+                                                <p class="text-xs text-gray-500">${new Date(aluno.dataEntrega).toLocaleDateString('pt-BR')} às ${aluno.horaEntrega}</p>
+                                            </div>
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">✓</span>` :
+                                            `<span class="text-sm text-orange-600 font-medium">Pendente</span>
+                                            <button onclick="marcarEntregue(${entrega.id}, '${aluno.id}')" class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
+                                                Marcar Entregue
+                                            </button>`
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Recriar ícones após atualizar o DOM
+            lucide.createIcons();
+        }
+
+        function marcarEntregue(entregaId, alunoId) {
+            const entregasDaTurma = entregas[turmaSelecionada];
+            const entrega = entregasDaTurma.find(e => e.id === entregaId);
+            if (entrega) {
+                const aluno = entrega.alunos.find(a => a.id === alunoId);
+                if (aluno) {
+                    const agora = new Date();
+                    aluno.entregue = true;
+                    aluno.dataEntrega = agora.toISOString().split('T')[0];
+                    aluno.horaEntrega = agora.toTimeString().slice(0, 5);
+                    atualizarInterface();
+                    alert('Entrega marcada como concluída!');
+                }
+            }
+        }
+
+        function adicionarEntrega() {
+            const titulo = prompt('Título da entrega:');
+            if (!titulo) return;
+            
+            const descricao = prompt('Descrição da entrega:');
+            if (!descricao) return;
+            
+            const dataLimite = prompt('Data limite (YYYY-MM-DD):');
+            if (!dataLimite) return;
+            
+            const horaLimite = prompt('Hora limite (HH:MM):');
+            if (!horaLimite) return;
+            
+            const entregasDaTurma = entregas[turmaSelecionada];
+            const novaEntrega = {
+                id: Math.max(...entregasDaTurma.map(e => e.id)) + 1,
+                titulo: titulo,
+                descricao: descricao,
+                dataLimite: dataLimite,
+                horaLimite: horaLimite,
+                alunos: (notas[turmaSelecionada] || []).map(aluno => ({
+                    id: aluno.id,
+                    nome: aluno.aluno,
+                    entregue: false,
+                    dataEntrega: null,
+                    horaEntrega: null
+                }))
+            };
+            
+            entregasDaTurma.push(novaEntrega);
+            atualizarInterface();
+            alert('Nova entrega adicionada com sucesso!');
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97fbf03ca18ef1f7',t:'MTc1Nzk3OTMwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

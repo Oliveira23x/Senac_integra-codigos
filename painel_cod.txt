@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAC Portal Acadêmico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-blue {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+        }
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .gradient-purple {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        .gradient-orange {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-trigger.active {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .tab-trigger {
+            transition: all 0.3s ease;
+        }
+        .tab-trigger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 0.8s ease;
+        }
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2">Painel Acadêmico SENAC</h1>
+                    <p class="text-blue-100">Bem-vindo de volta, <span id="userName">João Silva</span>!</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-blue-100">Último acesso</div>
+                        <div class="font-medium" id="lastAccess">Hoje, 14:30</div>
+                    </div>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i data-lucide="user" class="w-6 h-6"></i>
+                    </div>
+                    <button onclick="showNotification('Logout realizado com sucesso!', 'success')" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-colors text-sm btn-hover">
+                        <i data-lucide="log-out" class="w-4 h-4 mr-2 inline"></i>
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 shadow-lg card-hover cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-green-600" id="averageGrade">8.75</div>
+                        <div class="text-sm text-gray-600">Média Geral</div>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="trending-up" class="w-5 h-5 text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-lg card-hover cursor-pointer" onclick="switchTab('agenda')">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600" id="attendanceRate">96%</div>
+                        <div class="text-sm text-gray-600">Frequência</div>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-lg card-hover relative cursor-pointer" onclick="switchTab('vagas')">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-orange-600" id="pendingTasks">3</div>
+                        <div class="text-sm text-gray-600">Pendências</div>
+                    </div>
+                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                    </div>
+                </div>
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-badge"></div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-lg card-hover cursor-pointer" onclick="switchTab('certificados')">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-2xl font-bold text-purple-600" id="certificatesCount">12</div>
+                        <div class="text-sm text-gray-600">Certificados</div>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="award" class="w-5 h-5 text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-1 p-2">
+                <button class="tab-trigger active flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="dashboard">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Desempenho</span>
+                </button>
+                <button class="tab-trigger flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="agenda">
+                    <i data-lucide="calendar-days" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Agenda</span>
+                </button>
+                <button class="tab-trigger flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="assistente">
+                    <i data-lucide="bot" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Assistente</span>
+                </button>
+                <button class="tab-trigger flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="vagas">
+                    <i data-lucide="briefcase" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Vagas</span>
+                </button>
+                <button class="tab-trigger flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="certificados">
+                    <i data-lucide="file-text" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Certificados</span>
+                </button>
+                <button class="tab-trigger flex flex-col md:flex-row items-center justify-center px-3 py-3 md:py-2 rounded-lg text-sm font-medium transition-all" data-tab="recomendacoes">
+                    <i data-lucide="message-square" class="w-5 h-5 mb-1 md:mb-0 md:mr-2"></i>
+                    <span class="text-xs md:text-sm">Feedbacks</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Performance Chart -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 mr-2 text-blue-600"></i>
+                        Evolução das Notas
+                    </h3>
+                    <canvas id="gradesChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Attendance -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center">
+                        <i data-lucide="calendar-check" class="w-6 h-6 mr-2 text-green-600"></i>
+                        Frequência
+                    </h3>
+                    <div class="text-center mb-6">
+                        <div class="relative w-32 h-32 mx-auto">
+                            <canvas id="attendanceChart" width="128" height="128"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-green-600">96%</div>
+                                    <div class="text-xs text-gray-500">Presença</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-green-50 rounded-lg p-3">
+                            <div class="text-xl font-bold text-green-600">96</div>
+                            <div class="text-xs text-gray-600">Presenças</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-3">
+                            <div class="text-xl font-bold text-red-500">4</div>
+                            <div class="text-xs text-gray-600">Faltas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-blue-500 cursor-pointer" onclick="showSubjectDetails('Lógica de Programação', 8.5, 85)">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-gray-800">Lógica de Programação</h4>
+                        <span class="text-2xl font-bold text-blue-600">8.5</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-blue-500 h-2 rounded-full progress-bar" style="width: 85%"></div>
+                    </div>
+                    <div class="text-sm text-gray-600">85% do curso concluído</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-green-500 cursor-pointer" onclick="showSubjectDetails('Banco de Dados', 9.2, 92)">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-gray-800">Banco de Dados</h4>
+                        <span class="text-2xl font-bold text-green-600">9.2</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-green-500 h-2 rounded-full progress-bar" style="width: 92%"></div>
+                    </div>
+                    <div class="text-sm text-gray-600">92% do curso concluído</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-yellow-500 cursor-pointer" onclick="showSubjectDetails('Desenvolvimento Web', 7.8, 78)">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-gray-800">Desenvolvimento Web</h4>
+                        <span class="text-2xl font-bold text-yellow-600">7.8</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-yellow-500 h-2 rounded-full progress-bar" style="width: 78%"></div>
+                    </div>
+                    <div class="text-sm text-gray-600">78% do curso concluído</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-purple-500 cursor-pointer" onclick="showSubjectDetails('Comunicação', 9.5, 95)">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-semibold text-gray-800">Comunicação</h4>
+                        <span class="text-2xl font-bold text-purple-600">9.5</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-purple-500 h-2 rounded-full progress-bar" style="width: 95%"></div>
+                    </div>
+                    <div class="text-sm text-gray-600">95% do curso concluído</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Activities -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover mt-6">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <i data-lucide="clock" class="w-6 h-6 mr-2 text-orange-600"></i>
+                    Próximas Atividades
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 cursor-pointer card-hover" onclick="showTaskDetails('Trabalho Final - BD', 'Vence em 3 dias', 'urgente')">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                            <span class="font-semibold text-red-700">Urgente</span>
+                        </div>
+                        <h4 class="font-medium mb-1">Trabalho Final - BD</h4>
+                        <p class="text-sm text-gray-600 mb-2">Vence em 3 dias</p>
+                        <button class="text-xs bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 transition-colors btn-hover">
+                            Ver Detalhes
+                        </button>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 cursor-pointer card-hover" onclick="showTaskDetails('Prova - Lógica', 'Vence em 1 semana', 'atencao')">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                            <span class="font-semibold text-yellow-700">Atenção</span>
+                        </div>
+                        <h4 class="font-medium mb-1">Prova - Lógica</h4>
+                        <p class="text-sm text-gray-600 mb-2">Vence em 1 semana</p>
+                        <button class="text-xs bg-yellow-600 text-white px-3 py-1 rounded-full hover:bg-yellow-700 transition-colors btn-hover">
+                            Estudar
+                        </button>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 cursor-pointer card-hover" onclick="showTaskDetails('Apresentação', 'Vence em 2 semanas', 'programado')">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                            <span class="font-semibold text-blue-700">Programado</span>
+                        </div>
+                        <h4 class="font-medium mb-1">Apresentação</h4>
+                        <p class="text-sm text-gray-600 mb-2">Vence em 2 semanas</p>
+                        <button class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors btn-hover">
+                            Preparar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agenda Tab -->
+        <div id="agenda" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Calendar View -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i data-lucide="calendar" class="w-6 h-6 mr-2 text-blue-600"></i>
+                            <span id="currentMonth">Maio 2024</span>
+                        </h2>
+                        <div class="flex space-x-2">
+                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors btn-hover">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors btn-hover">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Mini Calendar -->
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 mb-4">
+                        <!-- Calendar will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Today's Schedule -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-lucide="clock" class="w-5 h-5 mr-2 text-green-600"></i>
+                        <span id="todayDate">Hoje - 20/05</span>
+                    </h3>
+                    <div id="todaySchedule" class="space-y-3">
+                        <!-- Schedule will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Schedule -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover mt-6">
+                <h3 class="text-xl font-semibold mb-6">Cronograma da Semana</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="weeklySchedule">
+                    <!-- Weekly schedule will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Assistente Tab -->
+        <div id="assistente" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chat Interface -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold flex items-center">
+                            <i data-lucide="bot" class="w-6 h-6 mr-2 text-purple-600"></i>
+                            Assistente Virtual SENAC
+                        </h2>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600">Online</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Welcome Message -->
+                    <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-10 h-10 gradient-purple rounded-full flex items-center justify-center">
+                                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-purple-700 mb-1">Assistente SENAC</div>
+                                <div class="text-sm text-gray-700">Olá, <span id="chatUserName">João</span>! Como posso ajudá-lo hoje? Posso responder dúvidas sobre:</div>
+                                <div class="grid grid-cols-2 gap-2 mt-3">
+                                    <button onclick="quickQuestion('notas')" class="text-xs bg-purple-100 text-purple-700 px-3 py-2 rounded-full hover:bg-purple-200 transition-colors btn-hover">
+                                        📊 Notas e Frequência
+                                    </button>
+                                    <button onclick="quickQuestion('cronograma')" class="text-xs bg-blue-100 text-blue-700 px-3 py-2 rounded-full hover:bg-blue-200 transition-colors btn-hover">
+                                        📅 Cronograma
+                                    </button>
+                                    <button onclick="quickQuestion('trabalhos')" class="text-xs bg-orange-100 text-orange-700 px-3 py-2 rounded-full hover:bg-orange-200 transition-colors btn-hover">
+                                        📝 Trabalhos
+                                    </button>
+                                    <button onclick="quickQuestion('carreira')" class="text-xs bg-green-100 text-green-700 px-3 py-2 rounded-full hover:bg-green-200 transition-colors btn-hover">
+                                        💼 Carreira
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="chat-messages" class="space-y-3 max-h-96 overflow-y-auto mb-4">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <input type="text" id="chat-input" placeholder="Digite sua pergunta..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <button onclick="sendMessage()" class="px-6 py-3 gradient-purple text-white rounded-lg hover:opacity-90 transition-opacity btn-hover">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="zap" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                            Ações Rápidas
+                        </h3>
+                        <div class="space-y-3">
+                            <button onclick="showNotification('Abrindo material de estudo...', 'info')" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="book-open" class="w-4 h-4 mr-2 text-blue-600"></i>
+                                    <span class="text-sm font-medium">Ver Material de Estudo</span>
+                                </div>
+                            </button>
+                            <button onclick="showNotification('Agendamento disponível para próxima semana!', 'success')" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="calendar-plus" class="w-4 h-4 mr-2 text-green-600"></i>
+                                    <span class="text-sm font-medium">Agendar Atendimento</span>
+                                </div>
+                            </button>
+                            <button onclick="showNotification('Conectando com suporte técnico...', 'info')" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="help-circle" class="w-4 h-4 mr-2 text-purple-600"></i>
+                                    <span class="text-sm font-medium">Suporte Técnico</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 mr-2 text-green-600"></i>
+                            Dicas de Estudo
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="p-3 bg-yellow-50 rounded-lg">
+                                <div class="font-medium text-yellow-700">💡 Dica do Dia</div>
+                                <div class="text-gray-600 mt-1">Pratique 30 minutos de programação diariamente para melhor fixação.</div>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded-lg">
+                                <div class="font-medium text-green-700">🎯 Meta da Semana</div>
+                                <div class="text-gray-600 mt-1">Complete 3 exercícios de banco de dados.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vagas Tab -->
+        <div id="vagas" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Job Listings -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <i data-lucide="briefcase" class="w-6 h-6 mr-2 text-green-600"></i>
+                                Oportunidades de Carreira
+                            </h2>
+                            <div class="flex space-x-2">
+                                <button onclick="showNotification('Filtros aplicados!', 'success')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm btn-hover">
+                                    <i data-lucide="filter" class="w-4 h-4 mr-1"></i>
+                                    Filtros
+                                </button>
+                                <button onclick="showNotification('Buscando novas vagas...', 'info')" class="px-4 py-2 gradient-green text-white rounded-lg hover:opacity-90 transition-opacity text-sm btn-hover">
+                                    <i data-lucide="search" class="w-4 h-4 mr-1"></i>
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="jobListings" class="space-y-4">
+                            <!-- Job listings will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Career Events -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="calendar-days" class="w-5 h-5 mr-2 text-orange-600"></i>
+                            Eventos de Carreira
+                        </h3>
+                        <div id="careerEvents" class="space-y-3">
+                            <!-- Events will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Career Services -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="user-check" class="w-5 h-5 mr-2 text-green-600"></i>
+                            Serviços de Carreira
+                        </h3>
+                        <div class="space-y-3">
+                            <button onclick="showNotification('Abrindo construtor de currículo...', 'info')" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-green-700">Montar Currículo</div>
+                                        <div class="text-xs text-gray-600">Crie um CV profissional</div>
+                                    </div>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 text-green-600"></i>
+                                </div>
+                            </button>
+                            
+                            <button onclick="showNotification('Simulação agendada para amanhã!', 'success')" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-blue-700">Simulação de Entrevista</div>
+                                        <div class="text-xs text-gray-600">Pratique suas habilidades</div>
+                                    </div>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 text-blue-600"></i>
+                                </div>
+                            </button>
+                            
+                            <button onclick="showNotification('Consultoria disponível na próxima semana!', 'info')" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-purple-700">Consultoria de Carreira</div>
+                                        <div class="text-xs text-gray-600">Orientação personalizada</div>
+                                    </div>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 text-purple-600"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Job Stats -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-blue-600"></i>
+                            Estatísticas
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600" id="availableJobs">47</div>
+                                <div class="text-sm text-gray-600">Vagas Disponíveis</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" id="appliedJobs">12</div>
+                                <div class="text-sm text-gray-600">Candidaturas Enviadas</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600" id="scheduledInterviews">3</div>
+                                <div class="text-sm text-gray-600">Entrevistas Agendadas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificados Tab -->
+        <div id="certificados" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Certificates Grid -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold flex items-center">
+                                <i data-lucide="award" class="w-6 h-6 mr-2 text-yellow-600"></i>
+                                Meus Certificados
+                            </h2>
+                            <div class="flex space-x-2">
+                                <button onclick="showNotification('Filtros aplicados aos certificados!', 'success')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm btn-hover">
+                                    <i data-lucide="filter" class="w-4 h-4 mr-1"></i>
+                                    Filtrar
+                                </button>
+                                <button onclick="downloadAllCertificates()" class="px-4 py-2 gradient-blue text-white rounded-lg hover:opacity-90 transition-opacity text-sm btn-hover">
+                                    <i data-lucide="download" class="w-4 h-4 mr-1"></i>
+                                    Baixar Todos
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="certificatesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Certificates will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Achievements -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="trophy" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                            Conquistas
+                        </h3>
+                        <div id="achievements" class="space-y-4">
+                            <!-- Achievements will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Progress Summary -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-blue-600"></i>
+                            Resumo do Progresso
+                        </h3>
+                        <div id="progressSummary" class="space-y-4">
+                            <!-- Progress will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="arrow-right" class="w-5 h-5 mr-2 text-purple-600"></i>
+                            Próximos Passos
+                        </h3>
+                        <div id="nextSteps" class="space-y-3">
+                            <!-- Next steps will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedbacks Tab -->
+        <div id="recomendacoes" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Feedbacks List -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h2 class="text-xl font-semibold mb-6 flex items-center">
+                            <i data-lucide="message-square" class="w-6 h-6 mr-2 text-blue-600"></i>
+                            Feedbacks dos Professores
+                        </h2>
+                        
+                        <div id="feedbacks-container" class="space-y-6">
+                            <!-- Feedbacks will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Q&A Section -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover mt-6">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center">
+                            <i data-lucide="help-circle" class="w-6 h-6 mr-2 text-green-600"></i>
+                            Perguntas e Respostas
+                        </h3>
+                        
+                        <div id="qaSection" class="space-y-4 mb-6">
+                            <!-- Q&A will be populated by JavaScript -->
+                        </div>
+                        
+                        <!-- Ask Question Form -->
+                        <div class="border-t pt-6">
+                            <h4 class="font-semibold mb-4 flex items-center">
+                                <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-600"></i>
+                                Fazer uma pergunta
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Disciplina</label>
+                                    <select id="questionSubject" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option>Selecione a disciplina</option>
+                                        <option>Lógica de Programação</option>
+                                        <option>Banco de Dados</option>
+                                        <option>Desenvolvimento Web</option>
+                                        <option>Comunicação</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Sua pergunta</label>
+                                    <textarea id="questionText" placeholder="Digite sua pergunta aqui..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4"></textarea>
+                                </div>
+                                <button onclick="submitQuestion()" class="px-6 py-2 gradient-blue text-white rounded-lg hover:opacity-90 transition-opacity btn-hover">
+                                    <i data-lucide="send" class="w-4 h-4 mr-2 inline"></i>
+                                    Enviar Pergunta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Feedback Summary -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-green-600"></i>
+                            Resumo de Feedbacks
+                        </h3>
+                        <div id="feedbackSummary" class="space-y-4">
+                            <!-- Summary will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="activity" class="w-5 h-5 mr-2 text-purple-600"></i>
+                            Atividade Recente
+                        </h3>
+                        <div id="recentActivity" class="space-y-3">
+                            <!-- Activity will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i data-lucide="zap" class="w-5 h-5 mr-2 text-orange-600"></i>
+                            Ações Rápidas
+                        </h3>
+                        <div class="space-y-3">
+                            <button onclick="showNotification('Mentoria agendada para próxima semana!', 'success')" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="message-circle" class="w-4 h-4 mr-2 text-blue-600"></i>
+                                    <span class="text-sm font-medium">Agendar Mentoria</span>
+                                </div>
+                            </button>
+                            <button onclick="showNotification('Abrindo biblioteca de materiais...', 'info')" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="book-open" class="w-4 h-4 mr-2 text-green-600"></i>
+                                    <span class="text-sm font-medium">Material de Apoio</span>
+                                </div>
+                            </button>
+                            <button onclick="showNotification('Grupo de estudos criado com sucesso!', 'success')" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors btn-hover">
+                                <div class="flex items-center">
+                                    <i data-lucide="users" class="w-4 h-4 mr-2 text-purple-600"></i>
+                                    <span class="text-sm font-medium">Grupo de Estudos</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Global variables
+        let currentMonth = 4; // May (0-indexed)
+        let currentYear = 2024;
+        let selectedDate = new Date();
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeCharts();
+            populateCalendar();
+            populateSchedule();
+            populateJobListings();
+            populateCertificates();
+            populateFeedbacks();
+            updateLastAccess();
+            
+            // Initialize chat input
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification('Bem-vindo ao Portal Acadêmico SENAC! 🎓', 'success');
+            }, 1000);
+        });
+
+        // Tab functionality
+        function initializeTabs() {
+            const tabTriggers = document.querySelectorAll('.tab-trigger');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabTriggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    const targetTab = trigger.getAttribute('data-tab');
+                    switchTab(targetTab);
+                });
+            });
+        }
+
+        function switchTab(targetTab) {
+            const tabTriggers = document.querySelectorAll('.tab-trigger');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Remove active class from all triggers and contents
+            tabTriggers.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked trigger and corresponding content
+            document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+            
+            // Show notification for tab switch
+            const tabNames = {
+                'dashboard': 'Desempenho',
+                'agenda': 'Agenda',
+                'assistente': 'Assistente',
+                'vagas': 'Vagas',
+                'certificados': 'Certificados',
+                'recomendacoes': 'Feedbacks'
+            };
+            
+            showNotification(`Navegando para ${tabNames[targetTab]}`, 'info');
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Grades Chart
+            const gradesCtx = document.getElementById('gradesChart');
+            if (gradesCtx) {
+                new Chart(gradesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'],
+                        datasets: [{
+                            label: 'Lógica de Programação',
+                            data: [7.5, 8.0, 8.2, 8.3, 8.5],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Banco de Dados',
+                            data: [8.0, 8.5, 8.8, 9.0, 9.2],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Comunicação',
+                            data: [9.0, 9.2, 9.3, 9.4, 9.5],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 6,
+                                max: 10
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Attendance Chart
+            const attendanceCtx = document.getElementById('attendanceChart');
+            if (attendanceCtx) {
+                new Chart(attendanceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Presenças', 'Faltas'],
+                        datasets: [{
+                            data: [96, 4],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+        }
+
+        // Calendar functionality
+        function populateCalendar() {
+            const calendarGrid = document.getElementById('calendar-grid');
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                              'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            // Clear calendar
+            calendarGrid.innerHTML = '';
+            
+            // Add day headers
+            const dayHeaders = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'text-center text-sm font-medium text-gray-500 p-2';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'text-center p-2 text-gray-400';
+                emptyDay.textContent = new Date(currentYear, currentMonth, -firstDay + i + 1).getDate();
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'text-center p-2 cursor-pointer hover:bg-blue-100 rounded-lg transition-colors';
+                dayElement.textContent = day;
+                
+                // Highlight today
+                const today = new Date();
+                if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                    dayElement.className += ' bg-blue-100 text-blue-600 font-medium';
+                }
+                
+                // Add special events
+                if (day === 20) {
+                    dayElement.className += ' bg-blue-100 text-blue-600 font-medium';
+                }
+                if (day === 23) {
+                    dayElement.className += ' bg-red-100 text-red-600 font-medium';
+                }
+                
+                dayElement.addEventListener('click', () => selectDate(day));
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentMonth += direction;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            populateCalendar();
+            showNotification(`Navegando para ${['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][currentMonth]}`, 'info');
+        }
+
+        function selectDate(day) {
+            selectedDate = new Date(currentYear, currentMonth, day);
+            populateCalendar();
+            updateTodaySchedule(day);
+            showNotification(`Data selecionada: ${day}/${currentMonth + 1}/${currentYear}`, 'success');
+        }
+
+        // Schedule functionality
+        function populateSchedule() {
+            const todaySchedule = document.getElementById('todaySchedule');
+            const weeklySchedule = document.getElementById('weeklySchedule');
+            
+            // Today's schedule
+            const todayClasses = [
+                { time: '08:00 - 12:00', subject: 'Lógica de Programação', color: 'blue' },
+                { time: '14:00 - 18:00', subject: 'Banco de Dados', color: 'green' }
+            ];
+            
+            todaySchedule.innerHTML = '';
+            todayClasses.forEach(cls => {
+                const classElement = document.createElement('div');
+                classElement.className = `flex items-center space-x-3 p-3 bg-${cls.color}-50 rounded-lg cursor-pointer card-hover`;
+                classElement.innerHTML = `
+                    <div class="w-3 h-3 bg-${cls.color}-500 rounded-full"></div>
+                    <div class="flex-1">
+                        <div class="font-medium text-sm">${cls.time}</div>
+                        <div class="text-xs text-gray-600">${cls.subject}</div>
+                    </div>
+                `;
+                classElement.addEventListener('click', () => {
+                    showNotification(`Aula: ${cls.subject} - ${cls.time}`, 'info');
+                });
+                todaySchedule.appendChild(classElement);
+            });
+            
+            // Weekly schedule
+            const weekDays = [
+                { day: 'Segunda-feira', classes: ['08:00 - Lógica de Programação', '14:00 - Banco de Dados'], color: 'blue' },
+                { day: 'Terça-feira', classes: ['08:00 - Desenvolvimento Web', '14:00 - Comunicação'], color: 'green' },
+                { day: 'Quarta-feira', classes: ['08:00 - Projeto Integrador', '14:00 - Laboratório'], color: 'purple' },
+                { day: 'Quinta-feira', classes: ['08:00 - Revisão Geral', '⚠️ Entrega Trabalho'], color: 'orange' },
+                { day: 'Sexta-feira', classes: ['08:00 - Apresentações', '14:00 - Feedback'], color: 'gray' }
+            ];
+            
+            weeklySchedule.innerHTML = '';
+            weekDays.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = `border-l-4 border-${day.color}-500 pl-4 py-3 bg-${day.color}-50 rounded-r-lg cursor-pointer card-hover`;
+                dayElement.innerHTML = `
+                    <div class="font-semibold text-${day.color}-700">${day.day}</div>
+                    ${day.classes.map(cls => `<div class="text-sm text-gray-600 mt-1">${cls}</div>`).join('')}
+                `;
+                dayElement.addEventListener('click', () => {
+                    showNotification(`Cronograma de ${day.day}`, 'info');
+                });
+                weeklySchedule.appendChild(dayElement);
+            });
+        }
+
+        function updateTodaySchedule(day) {
+            document.getElementById('todayDate').textContent = `${day}/${currentMonth + 1}`;
+        }
+
+        // Chat functionality
+        function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'flex justify-end mb-3 fade-in';
+            userMessage.innerHTML = `
+                <div class="bg-blue-600 text-white px-4 py-2 rounded-lg max-w-xs">
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // Clear input
+            chatInput.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+                const botResponse = getBotResponse(message);
+                const botMessage = document.createElement('div');
+                botMessage.className = 'flex justify-start mb-3 fade-in';
+                botMessage.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 gradient-purple rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div class="bg-gray-100 px-4 py-2 rounded-lg max-w-xs">
+                            <p class="text-sm text-gray-800">${botResponse}</p>
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(botMessage);
+                lucide.createIcons();
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function quickQuestion(type) {
+            const questions = {
+                'notas': 'Como estão minhas notas e frequência?',
+                'cronograma': 'Qual é meu cronograma de hoje?',
+                'trabalhos': 'Quais trabalhos tenho pendentes?',
+                'carreira': 'Que oportunidades de carreira você recomenda?'
+            };
+            
+            const chatInput = document.getElementById('chat-input');
+            chatInput.value = questions[type];
+            sendMessage();
+        }
+
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('nota') || lowerMessage.includes('média')) {
+                return 'Sua média geral atual é 8.75! 📊 Você está indo muito bem. Suas melhores disciplinas são Comunicação (9.5) e Banco de Dados (9.2). Continue assim!';
+            }
+            
+            if (lowerMessage.includes('cronograma') || lowerMessage.includes('aula') || lowerMessage.includes('hoje')) {
+                return 'Hoje você tem: 📅 08:00-12:00 Lógica de Programação e 14:00-18:00 Banco de Dados. Amanhã será Desenvolvimento Web!';
+            }
+            
+            if (lowerMessage.includes('trabalho') || lowerMessage.includes('pendente') || lowerMessage.includes('atividade')) {
+                return 'Você tem 3 pendências: ⚠️ Trabalho Final de BD (vence em 3 dias), Prova de Lógica (1 semana) e Apresentação (2 semanas). Precisa de ajuda com alguma?';
+            }
+            
+            if (lowerMessage.includes('vaga') || lowerMessage.includes('emprego') || lowerMessage.includes('carreira')) {
+                return 'Temos 47 vagas disponíveis! 💼 Recomendo especialmente a vaga de Estágio em TI na Empresa X - combina perfeitamente com seu perfil acadêmico.';
+            }
+            
+            if (lowerMessage.includes('certificado')) {
+                return 'Você já conquistou 2 certificados! 🏆 Lógica de Programação (8.5) e Comunicação (9.5). Está quase concluindo Banco de Dados (85% completo).';
+            }
+            
+            return 'Entendi sua pergunta! 🤖 Posso ajudar com informações sobre notas, cronograma, trabalhos, vagas de emprego e certificados. O que gostaria de saber especificamente?';
+        }
+
+        // Job listings functionality
+        function populateJobListings() {
+            const jobListings = document.getElementById('jobListings');
+            const jobs = [
+                {
+                    title: 'Estágio em TI - Empresa X',
+                    location: 'São Paulo, SP',
+                    hours: '20h/semana',
+                    salary: 'R$ 1.200,00',
+                    deadline: 'Vence em 5 dias',
+                    description: 'Oportunidade para estudantes de TI com conhecimentos básicos em programação. Ambiente colaborativo e mentoria especializada.',
+                    skills: ['JavaScript', 'HTML/CSS', 'Git'],
+                    color: 'blue',
+                    urgency: 'red'
+                },
+                {
+                    title: 'Analista Júnior - Empresa Y',
+                    location: 'Rio de Janeiro, RJ',
+                    hours: '40h/semana',
+                    salary: 'R$ 2.800,00',
+                    deadline: 'Nova vaga',
+                    description: 'Vaga para recém-formados com experiência em desenvolvimento web. Oportunidade de crescimento e benefícios completos.',
+                    skills: ['React', 'Node.js', 'SQL'],
+                    color: 'green',
+                    urgency: 'green'
+                },
+                {
+                    title: 'Suporte Técnico - Empresa Z',
+                    location: 'Belo Horizonte, MG',
+                    hours: '40h/semana',
+                    salary: 'R$ 1.500,00',
+                    deadline: 'Remoto',
+                    description: 'Atendimento ao cliente e suporte técnico em sistemas. Trabalho remoto com flexibilidade de horários.',
+                    skills: ['Suporte', 'Windows', 'Redes'],
+                    color: 'purple',
+                    urgency: 'blue'
+                }
+            ];
+            
+            jobListings.innerHTML = '';
+            jobs.forEach((job, index) => {
+                const jobElement = document.createElement('div');
+                jobElement.className = `border rounded-xl p-6 hover:shadow-lg transition-all bg-gradient-to-r from-${job.color}-50 to-${job.color === 'blue' ? 'indigo' : job.color === 'green' ? 'emerald' : 'violet'}-50 border-${job.color}-200 cursor-pointer card-hover`;
+                jobElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-semibold text-${job.color}-700">${job.title}</h4>
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                                <span class="flex items-center">
+                                    <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                                    ${job.location}
+                                </span>
+                                <span class="flex items-center">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    ${job.hours}
+                                </span>
+                                <span class="flex items-center">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 mr-1"></i>
+                                    ${job.salary}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="bg-${job.urgency}-100 text-${job.urgency}-700 px-3 py-1 rounded-full text-xs font-medium">
+                            ${job.deadline}
+                        </span>
+                    </div>
+                    <p class="text-gray-700 mb-4">${job.description}</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex space-x-2">
+                            ${job.skills.map(skill => `<span class="bg-${job.color}-100 text-${job.color}-700 px-2 py-1 rounded-full text-xs">${skill}</span>`).join('')}
+                        </div>
+                        <button class="px-6 py-2 gradient-${job.color} text-white rounded-lg hover:opacity-90 transition-opacity btn-hover">
+                            Candidatar-se
+                        </button>
+                    </div>
+                `;
+                
+                jobElement.addEventListener('click', () => {
+                    showJobDetails(job);
+                });
+                
+                jobListings.appendChild(jobElement);
+            });
+            
+            // Populate career events
+            const careerEvents = document.getElementById('careerEvents');
+            const events = [
+                {
+                    title: 'Feira de Estágios',
+                    date: '10 de Junho - 14:00h',
+                    description: 'Encontre oportunidades com empresas parceiras',
+                    color: 'orange'
+                },
+                {
+                    title: 'Workshop de CV',
+                    date: '15 de Junho - 16:00h',
+                    description: 'Aprenda a criar um currículo impactante',
+                    color: 'blue'
+                }
+            ];
+            
+            careerEvents.innerHTML = '';
+            events.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = `bg-gradient-to-r from-${event.color === 'orange' ? 'yellow' : 'blue'}-50 to-${event.color}-50 border border-${event.color === 'orange' ? 'yellow' : 'blue'}-200 rounded-lg p-4 cursor-pointer card-hover`;
+                eventElement.innerHTML = `
+                    <div class="flex items-center mb-2">
+                        <i data-lucide="${event.color === 'orange' ? 'calendar-days' : 'users'}" class="w-5 h-5 text-${event.color}-600 mr-2"></i>
+                        <span class="font-semibold text-${event.color}-700">${event.title}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">${event.date}</p>
+                    <p class="text-xs text-gray-600">${event.description}</p>
+                    <button class="mt-2 text-xs bg-${event.color}-600 text-white px-3 py-1 rounded-full hover:bg-${event.color}-700 transition-colors btn-hover">
+                        Inscrever-se
+                    </button>
+                `;
+                
+                eventElement.addEventListener('click', () => {
+                    showNotification(`Inscrito no evento: ${event.title}!`, 'success');
+                });
+                
+                careerEvents.appendChild(eventElement);
+            });
+        }
+
+        // Certificates functionality
+        function populateCertificates() {
+            const certificatesGrid = document.getElementById('certificatesGrid');
+            const certificates = [
+                {
+                    title: 'Lógica de Programação',
+                    status: 'Concluído',
+                    grade: '8.5',
+                    hours: '80h',
+                    completion: '15/04/2024',
+                    color: 'green',
+                    progress: 100
+                },
+                {
+                    title: 'Banco de Dados',
+                    status: 'Em Andamento',
+                    progress: 85,
+                    completion: '30/05/2024',
+                    color: 'blue',
+                    hours: '100h'
+                },
+                {
+                    title: 'Desenvolvimento Web',
+                    status: 'Próximo',
+                    start: '01/06/2024',
+                    hours: '120h',
+                    modality: 'Híbrido',
+                    color: 'purple',
+                    progress: 0
+                },
+                {
+                    title: 'Comunicação',
+                    status: 'Concluído',
+                    grade: '9.5',
+                    hours: '40h',
+                    completion: '10/04/2024',
+                    color: 'orange',
+                    progress: 100
+                }
+            ];
+            
+            certificatesGrid.innerHTML = '';
+            certificates.forEach(cert => {
+                const certElement = document.createElement('div');
+                certElement.className = `bg-gradient-to-br from-${cert.color}-50 to-${cert.color === 'green' ? 'emerald' : cert.color === 'blue' ? 'indigo' : cert.color === 'purple' ? 'violet' : 'amber'}-50 border-2 border-${cert.color}-200 rounded-xl p-6 card-hover cursor-pointer`;
+                
+                let statusIcon = cert.status === 'Concluído' ? 'check-circle' : cert.status === 'Em Andamento' ? 'clock' : 'calendar';
+                let statusColor = cert.status === 'Concluído' ? 'green' : cert.status === 'Em Andamento' ? 'blue' : 'purple';
+                
+                certElement.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-${cert.color}-100 rounded-full flex items-center justify-center">
+                            <i data-lucide="${statusIcon}" class="w-6 h-6 text-${cert.color}-600"></i>
+                        </div>
+                        <span class="bg-${statusColor}-100 text-${statusColor}-700 px-3 py-1 rounded-full text-xs font-medium">
+                            ${cert.status}
+                        </span>
+                    </div>
+                    <h4 class="text-lg font-semibold text-${cert.color}-800 mb-2">${cert.title}</h4>
+                    <div class="space-y-2 mb-4">
+                        ${cert.grade ? `
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Nota Final:</span>
+                                <span class="font-semibold text-${cert.color}-600">${cert.grade}</span>
+                            </div>
+                        ` : ''}
+                        ${cert.progress && cert.progress < 100 ? `
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Progresso:</span>
+                                <span class="font-semibold text-${cert.color}-600">${cert.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-${cert.color}-500 h-2 rounded-full progress-bar" style="width: ${cert.progress}%"></div>
+                            </div>
+                        ` : ''}
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Carga Horária:</span>
+                            <span class="font-semibold">${cert.hours}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">${cert.completion ? 'Conclusão:' : cert.start ? 'Início:' : 'Previsão:'}</span>
+                            <span class="font-semibold">${cert.completion || cert.start || cert.completion}</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-${cert.color}-600 text-white py-2 rounded-lg hover:bg-${cert.color}-700 transition-colors text-sm font-medium btn-hover">
+                        <i data-lucide="${cert.status === 'Concluído' ? 'download' : cert.status === 'Em Andamento' ? 'play' : 'info'}" class="w-4 h-4 mr-2 inline"></i>
+                        ${cert.status === 'Concluído' ? 'Baixar Certificado' : cert.status === 'Em Andamento' ? 'Continuar Curso' : 'Ver Detalhes'}
+                    </button>
+                `;
+                
+                certElement.addEventListener('click', () => {
+                    showCertificateDetails(cert);
+                });
+                
+                certificatesGrid.appendChild(certElement);
+            });
+            
+            // Populate achievements
+            const achievements = document.getElementById('achievements');
+            const achievementsList = [
+                { title: 'Melhor Aluno', subject: 'Disciplina: Comunicação', date: 'Abril 2024', color: 'yellow', icon: 'trophy' },
+                { title: '100% Presença', subject: 'Mês de Abril', date: 'Parabéns!', color: 'purple', icon: 'star' },
+                { title: 'Meta Atingida', subject: 'Nota acima de 8.0', date: 'Continue assim!', color: 'green', icon: 'target' }
+            ];
+            
+            achievements.innerHTML = '';
+            achievementsList.forEach(achievement => {
+                const achievementElement = document.createElement('div');
+                achievementElement.className = `text-center p-4 bg-gradient-to-br from-${achievement.color}-50 to-${achievement.color === 'yellow' ? 'amber' : achievement.color === 'purple' ? 'violet' : 'emerald'}-50 rounded-lg border border-${achievement.color}-200 cursor-pointer card-hover`;
+                achievementElement.innerHTML = `
+                    <div class="w-12 h-12 bg-${achievement.color}-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="${achievement.icon}" class="w-6 h-6 text-${achievement.color}-600"></i>
+                    </div>
+                    <div class="font-semibold text-${achievement.color}-700">${achievement.title}</div>
+                    <div class="text-sm text-gray-600">${achievement.subject}</div>
+                    <div class="text-xs text-gray-500 mt-1">${achievement.date}</div>
+                `;
+                
+                achievementElement.addEventListener('click', () => {
+                    showNotification(`Conquista: ${achievement.title}!`, 'success');
+                });
+                
+                achievements.appendChild(achievementElement);
+            });
+            
+            // Populate progress summary
+            const progressSummary = document.getElementById('progressSummary');
+            const progressData = [
+                { label: 'Certificados Concluídos', value: '2/4', percentage: 50, color: 'green' },
+                { label: 'Horas de Estudo', value: '120/240h', percentage: 50, color: 'blue' },
+                { label: 'Média Geral', value: '8.75', percentage: 87.5, color: 'green' }
+            ];
+            
+            progressSummary.innerHTML = '';
+            progressData.forEach(item => {
+                const progressElement = document.createElement('div');
+                progressElement.innerHTML = `
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${item.label}</span>
+                            <span class="font-semibold ${item.label === 'Média Geral' ? 'text-green-600' : ''}">${item.value}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-${item.color}-500 h-2 rounded-full progress-bar" style="width: ${item.percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+                progressSummary.appendChild(progressElement);
+            });
+            
+            // Populate next steps
+            const nextSteps = document.getElementById('nextSteps');
+            const steps = [
+                { title: 'Finalizar Banco de Dados', description: 'Faltam apenas 15% para conclusão', color: 'blue' },
+                { title: 'Preparar para Dev Web', description: 'Início em 1º de junho', color: 'purple' },
+                { title: 'Solicitar Certificados', description: '2 certificados disponíveis', color: 'green' }
+            ];
+            
+            nextSteps.innerHTML = '';
+            steps.forEach(step => {
+                const stepElement = document.createElement('div');
+                stepElement.className = `p-3 bg-${step.color}-50 rounded-lg cursor-pointer card-hover`;
+                stepElement.innerHTML = `
+                    <div class="font-medium text-${step.color}-700 text-sm">${step.title}</div>
+                    <div class="text-xs text-gray-600 mt-1">${step.description}</div>
+                `;
+                
+                stepElement.addEventListener('click', () => {
+                    showNotification(`Ação: ${step.title}`, 'info');
+                });
+                
+                nextSteps.appendChild(stepElement);
+            });
+        }
+
+        // Feedbacks functionality
+        function populateFeedbacks() {
+            const feedbacksContainer = document.getElementById('feedbacks-container');
+            const feedbacks = [
+                {
+                    teacher: 'Professora Ana - Lógica de Programação',
+                    time: 'há 2 horas',
+                    message: 'Aluno demonstra ótima participação nas aulas e compreensão dos conceitos fundamentais. Recomendo aprofundar na prática de JavaScript e estruturas de dados para consolidar o aprendizado.',
+                    strengths: ['Participação', 'Lógica'],
+                    color: 'blue'
+                },
+                {
+                    teacher: 'Professor Bruno - Banco de Dados',
+                    time: 'há 1 dia',
+                    message: 'Excelente desempenho nas atividades práticas. Recomendo revisar estruturas condicionais e laços de repetição para melhorar ainda mais a eficiência dos códigos SQL.',
+                    strengths: ['SQL', 'Modelagem'],
+                    improvements: ['Otimização de Queries'],
+                    color: 'green'
+                },
+                {
+                    teacher: 'Professora Carla - Comunicação',
+                    time: 'há 2 dias',
+                    message: 'Ótimo desempenho em comunicação e apresentações! Demonstra clareza na exposição de ideias e boa interação com a turma. Continue desenvolvendo essas habilidades.',
+                    strengths: ['Apresentação', 'Clareza'],
+                    color: 'purple'
+                }
+            ];
+            
+            feedbacksContainer.innerHTML = '';
+            feedbacks.forEach(feedback => {
+                const feedbackElement = document.createElement('div');
+                feedbackElement.className = `bg-gradient-to-r from-${feedback.color}-50 to-${feedback.color === 'blue' ? 'indigo' : feedback.color === 'green' ? 'emerald' : 'violet'}-50 border-l-4 border-${feedback.color}-500 rounded-r-xl p-6 fade-in cursor-pointer card-hover`;
+                feedbackElement.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-${feedback.color}-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user-check" class="w-6 h-6 text-${feedback.color}-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-semibold text-${feedback.color}-700">${feedback.teacher}</div>
+                                <span class="text-xs text-gray-500">${feedback.time}</span>
+                            </div>
+                            <p class="text-gray-700 mb-3">"${feedback.message}"</p>
+                            <div class="flex items-center space-x-4 text-sm">
+                                <span class="flex items-center text-green-600">
+                                    <i data-lucide="thumbs-up" class="w-4 h-4 mr-1"></i>
+                                    Pontos Fortes: ${feedback.strengths.join(', ')}
+                                </span>
+                                ${feedback.improvements ? `
+                                    <span class="flex items-center text-yellow-600">
+                                        <i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i>
+                                        Melhorar: ${feedback.improvements.join(', ')}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                feedbackElement.addEventListener('click', () => {
+                    showNotification(`Feedback de ${feedback.teacher.split(' - ')[0]}`, 'info');
+                });
+                
+                feedbacksContainer.appendChild(feedbackElement);
+            });
+            
+            // Populate Q&A section
+            const qaSection = document.getElementById('qaSection');
+            const qas = [
+                {
+                    student: 'João',
+                    question: 'Professor, como posso melhorar minha nota em lógica de programação?',
+                    answer: 'Pratique mais exercícios da plataforma e tire dúvidas nas aulas ao vivo. Recomendo focar nos conceitos de loops e condicionais.',
+                    color: 'blue'
+                },
+                {
+                    student: 'Maria',
+                    question: 'Tenho dúvidas sobre o trabalho final. Pode ajudar?',
+                    answer: 'Claro! Veja o modelo no AVA e traga suas dúvidas para a próxima aula. Também disponibilizei material extra na biblioteca virtual.',
+                    color: 'purple'
+                }
+            ];
+            
+            qaSection.innerHTML = '';
+            qas.forEach(qa => {
+                const qaElement = document.createElement('div');
+                qaElement.className = `bg-gradient-to-r from-${qa.color}-50 to-${qa.color === 'blue' ? 'indigo' : 'violet'}-50 rounded-lg p-4 border border-${qa.color}-200 cursor-pointer card-hover`;
+                qaElement.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-${qa.color}-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-4 h-4 text-${qa.color}-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-${qa.color}-700 mb-1">${qa.student} perguntou:</div>
+                            <p class="text-sm text-gray-700 mb-3">"${qa.question}"</p>
+                            <div class="bg-white rounded-lg p-3 border border-${qa.color}-200">
+                                <div class="flex items-start space-x-2">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="user-check" class="w-3 h-3 text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-green-700 text-sm mb-1">Professor respondeu:</div>
+                                        <p class="text-sm text-gray-700">"${qa.answer}"</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                qaElement.addEventListener('click', () => {
+                    showNotification(`Pergunta de ${qa.student}`, 'info');
+                });
+                
+                qaSection.appendChild(qaElement);
+            });
+            
+            // Populate feedback summary
+            const feedbackSummary = document.getElementById('feedbackSummary');
+            const summaryData = [
+                { label: 'Feedbacks Positivos', value: 8, color: 'green' },
+                { label: 'Pontos de Melhoria', value: 3, color: 'yellow' },
+                { label: 'Perguntas Respondidas', value: 12, color: 'blue' }
+            ];
+            
+            feedbackSummary.innerHTML = '';
+            summaryData.forEach(item => {
+                const summaryElement = document.createElement('div');
+                summaryElement.className = `text-center p-4 bg-${item.color}-50 rounded-lg border border-${item.color}-200 cursor-pointer card-hover`;
+                summaryElement.innerHTML = `
+                    <div class="text-2xl font-bold text-${item.color}-600">${item.value}</div>
+                    <div class="text-sm text-gray-600">${item.label}</div>
+                `;
+                
+                summaryElement.addEventListener('click', () => {
+                    showNotification(`${item.label}: ${item.value}`, 'info');
+                });
+                
+                feedbackSummary.appendChild(summaryElement);
+            });
+            
+            // Populate recent activity
+            const recentActivity = document.getElementById('recentActivity');
+            const activities = [
+                { title: 'Novo feedback recebido', subtitle: 'Prof. Ana - há 2 horas', color: 'green' },
+                { title: 'Pergunta respondida', subtitle: 'Prof. Bruno - há 1 dia', color: 'blue' },
+                { title: 'Avaliação concluída', subtitle: 'Comunicação - há 2 dias', color: 'purple' }
+            ];
+            
+            recentActivity.innerHTML = '';
+            activities.forEach(activity => {
+                const activityElement = document.createElement('div');
+                activityElement.className = 'flex items-start space-x-3 cursor-pointer card-hover p-2 rounded-lg hover:bg-gray-50';
+                activityElement.innerHTML = `
+                    <div class="w-2 h-2 bg-${activity.color}-500 rounded-full mt-2"></div>
+                    <div>
+                        <div class="text-sm font-medium">${activity.title}</div>
+                        <div class="text-xs text-gray-500">${activity.subtitle}</div>
+                    </div>
+                `;
+                
+                activityElement.addEventListener('click', () => {
+                    showNotification(activity.title, 'info');
+                });
+                
+                recentActivity.appendChild(activityElement);
+            });
+        }
+
+        // Interactive functions
+        function showSubjectDetails(subject, grade, progress) {
+            showNotification(`${subject}: Nota ${grade}, ${progress}% concluído`, 'info');
+        }
+
+        function showTaskDetails(task, deadline, priority) {
+            const priorityText = priority === 'urgente' ? 'URGENTE' : priority === 'atencao' ? 'ATENÇÃO' : 'PROGRAMADO';
+            showNotification(`${task} - ${deadline} (${priorityText})`, priority === 'urgente' ? 'error' : 'warning');
+        }
+
+        function showJobDetails(job) {
+            showNotification(`Vaga: ${job.title} - ${job.location}`, 'info');
+        }
+
+        function showCertificateDetails(cert) {
+            showNotification(`Certificado: ${cert.title} - ${cert.status}`, 'info');
+        }
+
+        function downloadAllCertificates() {
+            showNotification('Baixando todos os certificados disponíveis...', 'success');
+        }
+
+        function submitQuestion() {
+            const subject = document.getElementById('questionSubject').value;
+            const question = document.getElementById('questionText').value;
+            
+            if (!subject || subject === 'Selecione a disciplina' || !question.trim()) {
+                showNotification('Por favor, selecione uma disciplina e digite sua pergunta.', 'error');
+                return;
+            }
+            
+            showNotification('Pergunta enviada com sucesso! O professor responderá em breve.', 'success');
+            document.getElementById('questionSubject').value = 'Selecione a disciplina';
+            document.getElementById('questionText').value = '';
+        }
+
+        function updateLastAccess() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastAccess').textContent = `Hoje, ${timeString}`;
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-yellow-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="${
+                        type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'x-circle' :
+                        type === 'warning' ? 'alert-triangle' :
+                        'info'
+                    }" class="w-5 h-5"></i>
+                    <span class="text-sm font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            lucide.createIcons();
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e441fef48cce20',t:'MTc1NTA0NjY0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
