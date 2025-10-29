@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Acadêmico Integrado</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes floatAnimation {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-in-up { animation: slideInUp 0.5s ease-out forwards; }
+        .float { animation: floatAnimation 3s ease-in-out infinite; }
+        
+        /* Estilos para scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Esconder abas inativas */
+        .tab-content.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 antialiased">
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-900 p-4 fade-in">
+        <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 slide-in-up">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Portal Acadêmico</h1>
+                <p class="text-gray-500 mt-2">Bem-vindo(a) de volta!</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                    <input type="text" id="username" value="2024001" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    <input type="password" id="password" value="senha123" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition transform hover:scale-105">
+                    Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden min-h-screen">
+        <div class="flex flex-col md:flex-row bg-gray-100">
+            <aside id="sidebar" class="w-full md:w-64 bg-gray-800 text-white flex flex-col transition-all duration-300">
+                <div class="h-20 flex items-center justify-center border-b border-gray-700">
+                    <h2 class="text-2xl font-bold tracking-wider">PORTAL</h2>
+                </div>
+                <nav id="nav-menu" class="flex-grow p-4 space-y-2"></nav>
+            </aside>
+
+            <main class="flex-1 flex flex-col">
+                <header class="h-20 bg-white shadow-md flex items-center justify-between px-6">
+                    <div>
+                        <h3 id="header-welcome" class="text-xl font-semibold text-gray-800"></h3>
+                        <p class="text-sm text-gray-500">UserId: <code id="header-user-id" class="text-xs bg-gray-200 p-1 rounded"></code></p>
+                    </div>
+                    <button id="logout-button" class="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition">
+                        <span class="material-icons">logout</span>
+                        <span class="font-medium">Sair</span>
+                    </button>
+                </header>
+
+                <div id="main-content" class="flex-1 p-6 overflow-y-auto">
+                    </div>
+            </main>
+        </div>
+    </div>
+    
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg slide-in-up">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-lg font-semibold text-gray-800"></h3>
+                <button id="modal-close-btn" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6"></div>
+            <div id="modal-footer" class="p-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3"></div>
+        </div>
+    </div>
+
+    <div id="notification-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
+    
+
+    <script type="module">
+        // ========================================================
+        // 1. CONFIGURAÇÕES DO FIREBASE (SUBSTITUIR)
+        // ========================================================
+        const __app_id = 'portal-academico-spa';
+        const __initial_auth_token = null; // Usaremos signInAnonymously
+
+        // ATENÇÃO: Substitua este objeto pela configuração do seu projeto Firebase
+        const __firebase_config = {
+            apiKey: "AIzaSyYOUR_API_KEY_HERE",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
+        
+        // ========================================================
+        // 2. IMPORTAÇÕES DOS MÓDULOS FIREBASE
+        // ========================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // ========================================================
+        // 3. ESTADO DA APLICAÇÃO E VARIÁVEIS GLOBAIS
+        // ========================================================
+        let app, auth, db;
+        let currentUser = null;
+        let userId = null;
+        let activeFeedbackListeners = []; // Array para armazenar os unsubscribers
+
+        const mockUsers = {
+            '2024001': { pass: 'senha123', name: 'João da Silva', role: 'Estudante' },
+            'prof001': { pass: 'prof123', name: 'Prof. Ana Souza', role: 'Professor' }
+        };
+
+        const studentTabs = [
+            { id: 'desempenho', icon: 'trending_up', label: 'Desempenho' },
+            { id: 'agenda', icon: 'event', label: 'Agenda' },
+            { id: 'assistente', icon: 'support_agent', label: 'Assistente Virtual' },
+            { id: 'vagas', icon: 'work', label: 'Vagas' },
+            { id: 'certificados', icon: 'school', label: 'Certificados' },
+            { id: 'feedback', icon: 'feedback', label: 'Feedback' }
+        ];
+
+        const professorTabs = [
+            { id: 'lancar-notas', icon: 'edit_note', label: 'Lançar Notas' },
+            { id: 'gerenciar-agenda', icon: 'edit_calendar', label: 'Gerenciar Agenda' },
+            { id: 'feedbacks', icon: 'reviews', label: 'Feedbacks Recebidos' },
+            { id: 'notificar-vagas', icon: 'campaign', label: 'Notificar Vagas' }
+        ];
+
+        // ========================================================
+        // 4. SELETORES DE ELEMENTOS DOM
+        // ========================================================
+        const loginScreen = document.getElementById('login-screen');
+        const appScreen = document.getElementById('app-screen');
+        const loginForm = document.getElementById('login-form');
+        const navMenu = document.getElementById('nav-menu');
+        const mainContent = document.getElementById('main-content');
+        const headerWelcome = document.getElementById('header-welcome');
+        const headerUserId = document.getElementById('header-user-id');
+        const logoutButton = document.getElementById('logout-button');
+        const notificationContainer = document.getElementById('notification-container');
+        const modalElement = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // ========================================================
+        // 5. FUNÇÕES DE UI (MODAL, NOTIFICAÇÃO, NAVEGAÇÃO)
+        // ========================================================
+
+        /**
+         * Exibe uma notificação transitória na tela.
+         * @param {string} message - A mensagem a ser exibida.
+         * @param {string} type - 'success' (verde) ou 'error' (vermelho).
+         */
+        function showNotification(message, type = 'success') {
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'check_circle' : 'error';
+            
+            const notification = document.createElement('div');
+            notification.className = `flex items-center space-x-3 text-white p-4 rounded-lg shadow-lg fade-in ${bgColor}`;
+            notification.innerHTML = `
+                <span class="material-icons">${icon}</span>
+                <span>${message}</span>
+            `;
+            notificationContainer.appendChild(notification);
+            setTimeout(() => {
+                notification.style.transition = 'opacity 0.5s';
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, 4000);
+        }
+
+        /**
+         * Exibe o modal customizado com conteúdo e botões dinâmicos.
+         * @param {string} title - O título do modal.
+         * @param {string|HTMLElement} content - O conteúdo HTML ou elemento DOM para o corpo do modal.
+         * @param {Array<{text: string, class: string, onClick: Function}>} buttons - Array de objetos para os botões do rodapé.
+         */
+        function showModal(title, content, buttons = []) {
+            modalTitle.textContent = title;
+            if (typeof content === 'string') {
+                modalBody.innerHTML = content;
+            } else {
+                modalBody.innerHTML = '';
+                modalBody.appendChild(content);
+            }
+
+            modalFooter.innerHTML = '';
+            buttons.forEach(btnInfo => {
+                const button = document.createElement('button');
+                button.textContent = btnInfo.text;
+                button.className = `px-4 py-2 rounded-lg font-semibold transition ${btnInfo.class}`;
+                button.onclick = btnInfo.onClick;
+                modalFooter.appendChild(button);
+            });
+
+            modalElement.classList.remove('hidden');
+        }
+
+        /** Oculta o modal. */
+        function hideModal() {
+            modalElement.classList.add('hidden');
+        }
+
+        /**
+         * Troca a visibilidade do conteúdo das abas.
+         * @param {string} targetId - O ID do conteúdo da aba a ser exibido.
+         */
+        function switchTab(targetId) {
+            document.querySelectorAll('#nav-menu button').forEach(button => {
+                button.classList.toggle('bg-blue-600', button.dataset.target === targetId);
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== targetId);
+            });
+        }
+        
+        // ========================================================
+        // 6. LÓGICA DE AUTENTICAÇÃO E INICIALIZAÇÃO
+        // ========================================================
+
+        /** Inicializa o Firebase e configura o listener de estado de autenticação. */
+        function initFirebase(config) {
+            try {
+                app = initializeApp(config);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        // O login bem-sucedido já é tratado em handleLogin,
+                        // esta parte garante que o estado seja consistente.
+                    } else {
+                        // Usuário deslogado
+                        userId = null;
+                        currentUser = null;
+                        resetUI();
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao inicializar Firebase:", error);
+                showNotification("Falha na conexão com os serviços. Tente novamente mais tarde.", "error");
+            }
+        }
+
+        /** Manipula o evento de submissão do formulário de login. */
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const userData = mockUsers[username];
+            if (userData && userData.pass === password) {
+                try {
+                    // Usando signInAnonymously para obter um UID real do Firebase
+                    const userCredential = await signInAnonymously(auth);
+                    userId = userCredential.user.uid;
+                    currentUser = userData;
+
+                    showNotification(`Bem-vindo(a), ${currentUser.name}!`, 'success');
+                    loginScreen.classList.add('hidden');
+                    appScreen.classList.remove('hidden');
+                    appScreen.classList.add('fade-in');
+                    
+                    setupUIForUser();
+
+                } catch (error) {
+                    console.error("Erro na autenticação anônima:", error);
+                    showNotification("Erro ao autenticar com o servidor.", "error");
+                }
+            } else {
+                showNotification("Usuário ou senha inválidos.", "error");
+            }
+        }
+
+        /** Manipula o evento de logout. */
+        async function handleLogout() {
+             showModal('Confirmar Saída', 'Você tem certeza que deseja sair do portal?', [
+                { text: 'Cancelar', class: 'bg-gray-200 hover:bg-gray-300 text-gray-800', onClick: hideModal },
+                { text: 'Sair', class: 'bg-red-500 hover:bg-red-600 text-white', onClick: async () => {
+                    hideModal();
+                    await signOut(auth);
+                    showNotification("Você foi desconectado.", 'success');
+                }}
+            ]);
+        }
+        
+        /** Reseta a UI para o estado de login inicial. */
+        function resetUI() {
+            // Desconecta todos os listeners do Firestore
+            activeFeedbackListeners.forEach(unsubscribe => unsubscribe());
+            activeFeedbackListeners = [];
+            
+            appScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            navMenu.innerHTML = '';
+            mainContent.innerHTML = '';
+        }
+
+        /** Configura a UI (abas e conteúdo) com base no perfil do usuário logado. */
+        function setupUIForUser() {
+            if (!currentUser) return;
+
+            headerWelcome.textContent = `Olá, ${currentUser.name} (${currentUser.role})`;
+            headerUserId.textContent = userId;
+
+            const tabs = currentUser.role === 'Estudante' ? studentTabs : professorTabs;
+            
+            navMenu.innerHTML = ''; // Limpa o menu
+            mainContent.innerHTML = ''; // Limpa o conteúdo principal
+            
+            tabs.forEach(tab => {
+                // Cria o botão da aba na navegação
+                const button = document.createElement('button');
+                button.dataset.target = `tab-content-${tab.id}`;
+                button.className = 'w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 transition text-left';
+                button.innerHTML = `
+                    <span class="material-icons">${tab.icon}</span>
+                    <span>${tab.label}</span>
+                `;
+                button.onclick = () => switchTab(`tab-content-${tab.id}`);
+                navMenu.appendChild(button);
+
+                // Cria o container para o conteúdo da aba
+                const contentDiv = document.createElement('div');
+                contentDiv.id = `tab-content-${tab.id}`;
+                contentDiv.className = 'tab-content hidden fade-in';
+                mainContent.appendChild(contentDiv);
+            });
+
+            // Renderiza o conteúdo estático/mockado e inicializa os dinâmicos
+            renderAllTabsContent();
+
+            // Ativa a primeira aba por padrão
+            if (tabs.length > 0) {
+                switchTab(`tab-content-${tabs[0].id}`);
+            }
+        }
+        
+        // ========================================================
+        // 7. RENDERIZAÇÃO DE CONTEÚDO (MOCKADO E DINÂMICO)
+        // ========================================================
+        
+        function renderAllTabsContent() {
+             if (currentUser.role === 'Estudante') {
+                renderStudentDesempenho();
+                renderStudentAgenda();
+                renderStudentAssistente();
+                renderStudentVagas();
+                renderStudentCertificados();
+                initStudentFeedbackView(); // Dinâmico com Firestore
+            } else {
+                renderProfessorLancarNotas();
+                renderProfessorGerenciarAgenda();
+                initProfessorFeedbacksView(); // Dinâmico com Firestore
+                renderProfessorNotificarVagas();
+            }
+        }
+        
+        // ---- Funções de Renderização (Estudante - Mockado) ----
+        function renderStudentDesempenho() {
+            const contentEl = document.getElementById('tab-content-desempenho');
+            contentEl.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Meu Desempenho</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow"><h4 class="text-gray-500">Média Geral</h4><p class="text-3xl font-bold text-blue-600">8.7</p></div>
+                    <div class="bg-white p-6 rounded-lg shadow"><h4 class="text-gray-500">Frequência</h4><p class="text-3xl font-bold text-green-600">95%</p></div>
+                    <div class="bg-white p-6 rounded-lg shadow"><h4 class="text-gray-500">Créditos Concluídos</h4><p class="text-3xl font-bold text-indigo-600">72/120</p></div>
+                    <div class="bg-white p-6 rounded-lg shadow"><h4 class="text-gray-500">Próxima Avaliação</h4><p class="text-lg font-semibold text-gray-700 mt-2">28/10 - Prova de Algoritmos</p></div>
+                </div>
+                <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4">Notas por Disciplina</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50"><tr><th class="p-3">Disciplina</th><th class="p-3">Nota 1</th><th class="p-3">Nota 2</th><th class="p-3">Média</th><th class="p-3">Status</th></tr></thead>
+                            <tbody>
+                                <tr class="border-b"><td class="p-3">Engenharia de Software</td><td class="p-3">9.0</td><td class="p-3">8.5</td><td class="p-3 font-bold">8.75</td><td class="p-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aprovado</span></td></tr>
+                                <tr class="border-b"><td class="p-3">Banco de Dados</td><td class="p-3">7.5</td><td class="p-3">9.5</td><td class="p-3 font-bold">8.5</td><td class="p-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aprovado</span></td></tr>
+                                <tr class="border-b"><td class="p-3">Redes de Computadores</td><td class="p-3">6.0</td><td class="p-3">--</td><td class="p-3 font-bold">--</td><td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm">Em Curso</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStudentAgenda() {
+            const contentEl = document.getElementById('tab-content-agenda');
+            contentEl.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Minha Agenda</h2>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-4 p-3 border-b"><div class="w-24 text-right"><p class="font-semibold text-blue-600">08:00 - 10:00</p></div><div><h4 class="font-semibold">Aula de Engenharia de Software</h4><p class="text-sm text-gray-500">Sala 203, Bloco A</p></div></div>
+                        <div class="flex items-start space-x-4 p-3 border-b"><div class="w-24 text-right"><p class="font-semibold text-blue-600">10:15 - 12:00</p></div><div><h4 class="font-semibold">Aula de Banco de Dados</h4><p class="text-sm text-gray-500">Laboratório 5, Bloco C</p></div></div>
+                        <div class="flex items-start space-x-4 p-3"><div class="w-24 text-right"><p class="font-semibold text-yellow-600">14:00</p></div><div><h4 class="font-semibold">Entrega do Trabalho de Redes</h4><p class="text-sm text-gray-500">Portal do Aluno</p></div></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderStudentAssistente() {
+             document.getElementById('tab-content-assistente').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Assistente Virtual</h2>
+                <div class="bg-white p-6 rounded-lg shadow text-center">
+                    <span class="material-icons text-7xl text-blue-500 float">support_agent</span>
+                    <h3 class="text-xl font-semibold mt-4">Em breve!</h3>
+                    <p class="text-gray-600 mt-2">Estamos trabalhando em um assistente com IA para ajudar com suas dúvidas acadêmicas 24/7.</p>
+                </div>`;
+        }
+
+        function renderStudentVagas() {
+             document.getElementById('tab-content-vagas').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Vagas e Oportunidades</h2>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="space-y-4">
+                        <div class="border p-4 rounded-lg hover:shadow-md transition"><h4 class="font-semibold text-blue-700">Estágio em Desenvolvimento Web - Empresa X</h4><p class="text-sm text-gray-500">São Paulo, SP - Requisitos: HTML, CSS, JavaScript. Cursando a partir do 2º semestre.</p></div>
+                        <div class="border p-4 rounded-lg hover:shadow-md transition"><h4 class="font-semibold text-blue-700">Desenvolvedor(a) Júnior .NET - Tech Solutions</h4><p class="text-sm text-gray-500">Remoto - Requisitos: C#, SQL Server. Conhecimento em nuvem é um diferencial.</p></div>
+                    </div>
+                </div>`;
+        }
+
+        function renderStudentCertificados() {
+             document.getElementById('tab-content-certificados').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Meus Certificados</h2>
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex items-center justify-between border-b pb-3 mb-3">
+                        <div>
+                            <h4 class="font-semibold">Workshop de Metodologias Ágeis</h4>
+                            <p class="text-sm text-gray-500">Emitido em: 15/06/2025</p>
+                        </div>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">Baixar PDF</button>
+                    </div>
+                     <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-semibold">Curso de Introdução a Docker</h4>
+                            <p class="text-sm text-gray-500">Emitido em: 02/03/2025</p>
+                        </div>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">Baixar PDF</button>
+                    </div>
+                </div>`;
+        }
+
+        // ---- Funções de Renderização (Professor - Mockado) ----
+        function renderProfessorLancarNotas() {
+             document.getElementById('tab-content-lancar-notas').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Lançamento de Notas</h2>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Selecione a Turma:</label>
+                        <select class="w-full p-2 border rounded-lg"><option>TDS2024-A - Engenharia de Software</option><option>TDS2024-B - Banco de Dados</option></select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50"><tr><th class="p-3">Aluno</th><th class="p-3">Nota 1</th><th class="p-3">Nota 2</th><th class="p-3">Ações</th></tr></thead>
+                            <tbody>
+                                <tr class="border-b"><td class="p-3">João da Silva</td><td class="p-3"><input type="number" class="w-20 p-1 border rounded" value="9.0"></td><td class="p-3"><input type="number" class="w-20 p-1 border rounded" value="8.5"></td><td class="p-3"><button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm">Salvar</button></td></tr>
+                                <tr class="border-b"><td class="p-3">Maria Oliveira</td><td class="p-3"><input type="number" class="w-20 p-1 border rounded" value="8.0"></td><td class="p-3"><input type="number" class="w-20 p-1 border rounded" value="7.0"></td><td class="p-3"><button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm">Salvar</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+        }
+        
+        function renderProfessorGerenciarAgenda() {
+             document.getElementById('tab-content-gerenciar-agenda').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerenciar Agenda</h2>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="font-semibold text-lg mb-4">Adicionar Novo Evento</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" placeholder="Título do Evento" class="p-2 border rounded">
+                        <input type="date" class="p-2 border rounded">
+                        <button class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Adicionar à Agenda</button>
+                    </div>
+                </div>`;
+        }
+
+        function renderProfessorNotificarVagas() {
+             document.getElementById('tab-content-notificar-vagas').innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Notificar Vagas</h2>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="font-semibold text-lg mb-4">Cadastrar Nova Oportunidade</h3>
+                    <div class="space-y-4">
+                        <input type="text" placeholder="Título da Vaga" class="w-full p-2 border rounded">
+                        <textarea placeholder="Descrição e Requisitos" class="w-full p-2 border rounded" rows="4"></textarea>
+                        <button class="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 w-full">Enviar Notificação para Alunos</button>
+                    </div>
+                </div>`;
+        }
+        
+        // ========================================================
+        // 8. LÓGICA DE FEEDBACK (FIRESTORE)
+        // ========================================================
+
+        // --- Visão do Aluno ---
+        function initStudentFeedbackView() {
+            const container = document.getElementById('tab-content-feedback');
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Enviar Feedback</h2>
+                        <form id="feedback-form">
+                            <div class="mb-4">
+                                <label for="feedback-type" class="block text-sm font-medium text-gray-700">Tipo</label>
+                                <select id="feedback-type" class="w-full p-2 mt-1 border rounded-lg" required>
+                                    <option>Sugestão</option>
+                                    <option>Reclamação</option>
+                                    <option>Elogio</option>
+                                    <option>Outro</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="feedback-message" class="block text-sm font-medium text-gray-700">Mensagem</label>
+                                <textarea id="feedback-message" rows="5" class="w-full p-2 mt-1 border rounded-lg" required></textarea>
+                            </div>
+                            <div class="mb-4 flex items-center">
+                                <input type="checkbox" id="feedback-anonymous" class="h-4 w-4 rounded">
+                                <label for="feedback-anonymous" class="ml-2 block text-sm text-gray-900">Enviar como anônimo</label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Enviar</button>
+                        </form>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Meus Feedbacks Enviados</h2>
+                        <div id="my-feedbacks-list" class="space-y-4 max-h-96 overflow-y-auto">
+                            <p class="text-gray-500">Nenhum feedback não-anônimo enviado.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Event listener para o formulário
+            document.getElementById('feedback-form').addEventListener('submit', handleSendFeedback);
+            
+            // Listener para feedbacks do usuário
+            listenToStudentFeedbacks();
+        }
+
+        async function handleSendFeedback(e) {
+            e.preventDefault();
+            const type = document.getElementById('feedback-type').value;
+            const message = document.getElementById('feedback-message').value;
+            const isAnonymous = document.getElementById('feedback-anonymous').checked;
+
+            try {
+                await addDoc(collection(db, `artifacts/${__app_id}/public/data/feedbacks`), {
+                    type,
+                    message,
+                    isAnonymous,
+                    senderId: userId,
+                    senderName: isAnonymous ? 'Anônimo' : currentUser.name,
+                    status: 'enviado',
+                    createdAt: serverTimestamp(),
+                    professorResponse: null
+                });
+                showNotification("Feedback enviado com sucesso!", 'success');
+                e.target.reset(); // Limpa o formulário
+            } catch (error) {
+                console.error("Erro ao enviar feedback: ", error);
+                showNotification("Falha ao enviar feedback.", 'error');
+            }
+        }
+
+        function listenToStudentFeedbacks() {
+            if (!userId) return;
+            const feedbacksCollection = collection(db, `artifacts/${__app_id}/public/data/feedbacks`);
+            const q = query(feedbacksCollection, where("senderId", "==", userId), where("isAnonymous", "==", false), orderBy("createdAt", "desc"));
+
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const listEl = document.getElementById('my-feedbacks-list');
+                listEl.innerHTML = '';
+                if (querySnapshot.empty) {
+                    listEl.innerHTML = '<p class="text-gray-500">Nenhum feedback não-anônimo enviado.</p>';
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const feedback = doc.data();
+                    const date = feedback.createdAt ? feedback.createdAt.toDate().toLocaleString('pt-BR') : 'Enviando...';
+                    const feedbackEl = document.createElement('div');
+                    feedbackEl.className = 'border p-4 rounded-lg';
+                    feedbackEl.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">${feedback.type}</span>
+                            <span class="text-xs text-gray-500">${date}</span>
+                        </div>
+                        <p class="text-gray-700">${feedback.message}</p>
+                        ${feedback.professorResponse ? `<div class="mt-3 pt-3 border-t"><p class="text-sm font-semibold text-blue-700">Resposta do Professor:</p><p class="text-sm text-gray-600">${feedback.professorResponse}</p></div>` : ''}
+                    `;
+                    listEl.appendChild(feedbackEl);
+                });
+            });
+            activeFeedbackListeners.push(unsubscribe); // Armazena para desconectar no logout
+        }
+
+        // --- Visão do Professor ---
+        function initProfessorFeedbacksView() {
+            const container = document.getElementById('tab-content-feedbacks');
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Feedbacks Recebidos</h2>
+                <div class="flex space-x-4 mb-4 bg-white p-4 rounded-lg shadow">
+                    <div>
+                        <label for="filter-status" class="text-sm font-medium">Filtrar por Status:</label>
+                        <select id="filter-status" class="p-2 border rounded-lg">
+                            <option value="todos">Todos</option>
+                            <option value="enviado">Enviado</option>
+                            <option value="em-analise">Em Análise</option>
+                            <option value="resolvido">Resolvido</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="filter-type" class="text-sm font-medium">Filtrar por Tipo:</label>
+                        <select id="filter-type" class="p-2 border rounded-lg">
+                            <option value="todos">Todos</option>
+                            <option value="Sugestão">Sugestão</option>
+                            <option value="Reclamação">Reclamação</option>
+                            <option value="Elogio">Elogio</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="all-feedbacks-list" class="space-y-4">
+                    <p class="text-gray-500 text-center p-4">Carregando feedbacks...</p>
+                </div>
+            `;
+
+            document.getElementById('filter-status').addEventListener('change', listenToAllFeedbacks);
+            document.getElementById('filter-type').addEventListener('change', listenToAllFeedbacks);
+
+            listenToAllFeedbacks();
+        }
+        
+        function listenToAllFeedbacks() {
+            // Desconecta listener anterior se existir
+            if (activeFeedbackListeners.length > 0) {
+                 activeFeedbackListeners.forEach(unsubscribe => unsubscribe());
+                 activeFeedbackListeners = [];
+            }
+        
+            const feedbacksCollection = collection(db, `artifacts/${__app_id}/public/data/feedbacks`);
+            const statusFilter = document.getElementById('filter-status').value;
+            const typeFilter = document.getElementById('filter-type').value;
+
+            let queries = [orderBy("createdAt", "desc")];
+            if (statusFilter !== 'todos') queries.push(where("status", "==", statusFilter));
+            if (typeFilter !== 'todos') queries.push(where("type", "==", typeFilter));
+
+            const q = query(feedbacksCollection, ...queries);
+
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const listEl = document.getElementById('all-feedbacks-list');
+                listEl.innerHTML = '';
+                 if (querySnapshot.empty) {
+                    listEl.innerHTML = '<p class="text-gray-500 text-center p-4">Nenhum feedback encontrado com os filtros selecionados.</p>';
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const feedback = doc.data();
+                    const id = doc.id;
+                    const date = feedback.createdAt ? feedback.createdAt.toDate().toLocaleString('pt-BR') : 'Recebendo...';
+                    
+                    const statusColors = {
+                        enviado: 'bg-gray-200 text-gray-800',
+                        'em-analise': 'bg-yellow-200 text-yellow-800',
+                        resolvido: 'bg-green-200 text-green-800'
+                    };
+
+                    const item = document.createElement('div');
+                    item.className = 'bg-white p-4 rounded-lg shadow';
+                    item.innerHTML = `
+                        <div class="flex justify-between items-start">
+                           <div>
+                                <p class="text-sm text-gray-500">De: <span class="font-semibold">${feedback.senderName}</span> (${feedback.type})</p>
+                                <p class="text-sm text-gray-500">Em: ${date}</p>
+                           </div>
+                           <span class="text-xs font-semibold px-2 py-1 rounded-full ${statusColors[feedback.status]}">${feedback.status.replace('-', ' ')}</span>
+                        </div>
+                        <p class="text-gray-800 my-3">${feedback.message}</p>
+                        ${feedback.professorResponse ? `<div class="mt-3 pt-3 border-t bg-blue-50 p-2 rounded"><p class="text-sm font-semibold text-blue-700">Sua Resposta:</p><p class="text-sm text-gray-600">${feedback.professorResponse}</p></div>` : ''}
+                        <div class="flex justify-end space-x-2 mt-4">
+                            <button data-action="respond" data-id="${id}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Responder</button>
+                            <select data-action="status" data-id="${id}" class="text-sm border-gray-300 rounded">
+                                <option value="" disabled>Mudar status</option>
+                                <option value="em-analise" ${feedback.status === 'em-analise' ? 'selected' : ''}>Em análise</option>
+                                <option value="resolvido" ${feedback.status === 'resolvido' ? 'selected' : ''}>Resolvido</option>
+                            </select>
+                        </div>
+                    `;
+                    listEl.appendChild(item);
+                });
+            }, (error) => {
+                console.error("Erro ao buscar feedbacks:", error);
+                document.getElementById('all-feedbacks-list').innerHTML = '<p class="text-red-500 text-center p-4">Ocorreu um erro ao carregar os feedbacks.</p>';
+            });
+            activeFeedbackListeners.push(unsubscribe);
+        }
+
+        async function updateFeedback(id, data) {
+            const feedbackRef = doc(db, `artifacts/${__app_id}/public/data/feedbacks`, id);
+            try {
+                await updateDoc(feedbackRef, data);
+                showNotification("Feedback atualizado com sucesso!", "success");
+            } catch (error) {
+                console.error("Erro ao atualizar feedback:", error);
+                showNotification("Falha ao atualizar o feedback.", "error");
+            }
+        }
+        
+        function handleProfessorActions(e) {
+            const target = e.target;
+            const action = target.dataset.action;
+            const id = target.dataset.id;
+            
+            if (!action || !id) return;
+
+            if (action === 'status') {
+                const newStatus = target.value;
+                if (newStatus) {
+                    updateFeedback(id, { status: newStatus });
+                }
+            }
+            
+            if (action === 'respond') {
+                const responseTextarea = document.createElement('textarea');
+                responseTextarea.rows = 4;
+                responseTextarea.className = 'w-full p-2 border rounded-lg';
+                responseTextarea.placeholder = 'Digite sua resposta aqui...';
+
+                showModal('Responder Feedback', responseTextarea, [
+                    { text: 'Cancelar', class: 'bg-gray-200 hover:bg-gray-300', onClick: hideModal },
+                    { text: 'Enviar Resposta', class: 'bg-blue-600 text-white hover:bg-blue-700', onClick: () => {
+                        const response = responseTextarea.value;
+                        if (response) {
+                            updateFeedback(id, { professorResponse: response });
+                            hideModal();
+                        } else {
+                            showNotification('A resposta não pode estar vazia.', 'error');
+                        }
+                    }}
+                ]);
+            }
+        }
+
+        // ========================================================
+        // 9. EVENT LISTENERS GLOBAIS
+        // ========================================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase(__firebase_config);
+
+            loginForm.addEventListener('submit', handleLogin);
+            logoutButton.addEventListener('click', handleLogout);
+            modalCloseBtn.addEventListener('click', hideModal);
+            
+            // Listener de delegação para ações na lista de feedbacks do professor
+            document.getElementById('tab-content-feedbacks')?.addEventListener('click', handleProfessorActions);
+            document.getElementById('tab-content-feedbacks')?.addEventListener('change', handleProfessorActions);
+
+             // Fechar modal ao clicar fora do conteúdo
+            modalElement.addEventListener('click', (e) => {
+                if (e.target === modalElement) {
+                    hideModal();
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
